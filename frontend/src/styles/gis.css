@@ -879,3 +879,345 @@
     bottom: 12px;
   }
 }
+
+
+/* =========================================================
+   NEARBY PROJECT INTELLIGENCE
+   ========================================================= */
+
+.gis-nearby-section {
+  margin-top: 13px;
+  padding-top: 12px;
+
+  border-top: 1px solid #e5ebe7;
+}
+
+.gis-nearby-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 8px;
+}
+
+.gis-nearby-header > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gis-nearby-header strong {
+  color: #172b36;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.gis-nearby-header span {
+  color: #7a8983;
+  font-size: 8px;
+}
+
+.gis-nearby-count {
+  min-width: 20px;
+  height: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 6px;
+
+  background: #eef8f2;
+  color: #10834b;
+
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+
+/* Nearby list */
+
+.gis-nearby-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  max-height: 190px;
+  overflow-y: auto;
+}
+
+.gis-nearby-project {
+  padding: 8px;
+
+  border: 1px solid #e4ebe6;
+  border-radius: 7px;
+
+  background: #fafcfb;
+}
+
+.gis-nearby-project-main {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.gis-nearby-icon {
+  width: 25px;
+  height: 25px;
+  min-width: 25px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 6px;
+
+  background: #eef8f2;
+  color: #10834b;
+}
+
+.gis-nearby-project-info {
+  min-width: 0;
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gis-nearby-project-info strong {
+  overflow: hidden;
+
+  color: #172b36;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gis-nearby-project-info span {
+  overflow: hidden;
+
+  color: #7a8983;
+
+  font-size: 7px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gis-nearby-distance {
+  min-width: 58px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.gis-nearby-distance strong {
+  color: #172b36;
+
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+}
+
+.gis-proximity-badge {
+  padding: 2px 4px;
+
+  border-radius: 4px;
+
+  font-size: 7px;
+  font-weight: 800;
+}
+
+.gis-proximity-badge.very-close {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.gis-proximity-badge.nearby {
+  background: #fffbeb;
+  color: #a56b00;
+}
+
+.gis-proximity-badge.moderate {
+  background: #eef8f2;
+  color: #10834b;
+}
+
+.gis-proximity-badge.distant,
+.gis-proximity-badge.unknown {
+  background: #f1f5f3;
+  color: #71817b;
+}
+
+
+/* Nearby actions */
+
+.gis-nearby-project-actions {
+  margin-top: 6px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gis-nearby-risk {
+  color: #7a8983;
+
+  font-family: 'DM Mono', monospace;
+  font-size: 7px;
+  font-weight: 700;
+}
+
+.gis-nearby-project-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+
+  padding: 4px 6px;
+
+  border: 0;
+  border-radius: 5px;
+
+  background: #eef8f2;
+  color: #10834b;
+
+  font-size: 8px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.gis-nearby-project-actions button:hover {
+  background: #dff1e6;
+}
+
+
+/* Empty */
+
+.gis-nearby-empty {
+  min-height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  padding: 8px;
+
+  border: 1px dashed #d7e2dc;
+  border-radius: 7px;
+
+  color: #7a8983;
+
+  font-size: 8px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+
+/* Mobile */
+
+@media (max-width: 600px) {
+
+  .gis-nearby-project-main {
+    align-items: flex-start;
+  }
+
+  .gis-nearby-distance {
+    min-width: 52px;
+  }
+
+}
+
+/* =========================================================
+   GIS + OVERLAP EVIDENCE
+   ========================================================= */
+
+.gis-overlap-score {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 2px 4px;
+
+  border-radius: 4px;
+
+  font-family: 'DM Mono', monospace;
+  font-size: 7px;
+  font-weight: 800;
+}
+
+.gis-overlap-score.duplicate-high {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.gis-overlap-score.duplicate-medium {
+  background: #fffbeb;
+  color: #a56b00;
+}
+
+.gis-overlap-score.duplicate-low {
+  background: #f1f5f3;
+  color: #64746d;
+}
+
+.gis-overlap-score.duplicate-clear {
+  background: #f1f5f3;
+  color: #71817b;
+}
+
+
+/* Why linked */
+
+.gis-overlap-reasons {
+  margin-top: 6px;
+  padding: 5px 6px;
+
+  border-radius: 5px;
+
+  background: #fffaf0;
+  border: 1px solid #f3e5c5;
+}
+
+.gis-overlap-reasons span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  color: #956c19;
+
+  font-size: 7px;
+  line-height: 1.35;
+}
+
+.gis-overlap-reasons svg {
+  flex: 0 0 auto;
+}
+
+
+/* Overlap status */
+
+.gis-overlap-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+
+  margin-left: auto;
+
+  padding: 3px 5px;
+
+  border-radius: 4px;
+
+  background: #fff7e6;
+  color: #956c19;
+
+  font-size: 7px;
+  font-weight: 800;
+}

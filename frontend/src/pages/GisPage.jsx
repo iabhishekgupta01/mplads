@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+
 import {
   ArrowRight,
   Layers,
@@ -9,6 +10,7 @@ import {
   ZoomIn,
   ZoomOut,
   LocateFixed,
+  GitCompare,
 } from 'lucide-react'
 
 import {
@@ -23,10 +25,12 @@ import 'leaflet/dist/leaflet.css'
 
 import { useApp } from '../context/AppContext.jsx'
 import { riskLabel } from '../utils/formatters.js'
+import { compareProjects } from '../services/duplicateWorkEngine.jsx'
 
 
 /* =========================================================
    INDIA STATE CENTRE COORDINATES
+
    Used as fallback when a project does not have
    latitude / longitude in mock data.
    ========================================================= */
@@ -116,7 +120,7 @@ function MapControls() {
    PROJECT COORDINATES
    ========================================================= */
 
-function getCoordinates(project, index) {
+function getCoordinates(project, index = 0) {
   const latitude = Number(
     project?.latitude ??
       project?.lat ??
@@ -131,10 +135,8 @@ function getCoordinates(project, index) {
   )
 
   /*
-   * If project already contains valid coordinates,
-   * use them directly.
+   * If valid coordinates exist, use them.
    */
-
   if (
     Number.isFinite(latitude) &&
     Number.isFinite(longitude) &&
@@ -147,14 +149,16 @@ function getCoordinates(project, index) {
   }
 
   /*
-   * Otherwise use state centre with deterministic
-   * offsets so markers don't completely overlap.
+   * Otherwise use state centre.
    */
-
   const fallback =
     STATE_COORDINATES[project?.state] ||
     [22.9734, 78.6569]
 
+  /*
+   * Deterministic offsets prevent all projects
+   * without coordinates from sitting exactly together.
+   */
   const row = Math.floor(index / 4)
   const column = index % 4
 
@@ -166,24 +170,105 @@ function getCoordinates(project, index) {
 
 
 /* =========================================================
+   DISTANCE CALCULATION
+
+   Haversine distance between two [lat, lng] points.
+   ========================================================= */
+
+function calculateDistanceKm(pointA, pointB) {
+  if (!pointA || !pointB) return Infinity
+
+  const [lat1, lon1] = pointA
+  const [lat2, lon2] = pointB
+
+  const earthRadius = 6371
+
+  const dLat =
+    ((lat2 - lat1) * Math.PI) / 180
+
+  const dLon =
+    ((lon2 - lon1) * Math.PI) / 180
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) ** 2
+
+  const c =
+    2 * Math.atan2(
+      Math.sqrt(a),
+      Math.sqrt(1 - a)
+    )
+
+  return earthRadius * c
+}
+
+
+/* =========================================================
+   PROXIMITY LEVEL
+   ========================================================= */
+
+function getProximityLevel(distance) {
+  if (distance <= 1) {
+    return {
+      label: 'Very Close',
+      className: 'very-close',
+    }
+  }
+
+  if (distance <= 5) {
+    return {
+      label: 'Nearby',
+      className: 'nearby',
+    }
+  }
+
+  if (distance <= 10) {
+    return {
+      label: 'Within 10 km',
+      className: 'within-10',
+    }
+  }
+
+  return {
+    label: 'Distant',
+    className: 'distant',
+  }
+}
+
+
+/* =========================================================
    RISK HELPERS
    ========================================================= */
 
 function getRiskColor(score) {
-  const label = riskLabel(score)?.toUpperCase()
+  const label =
+    riskLabel(score)?.toUpperCase()
 
-  if (label === 'HIGH') return '#c62828'
-  if (label === 'MEDIUM') return '#c8902f'
+  if (label === 'HIGH') {
+    return '#c62828'
+  }
+
+  if (label === 'MEDIUM') {
+    return '#c8902f'
+  }
 
   return '#10834b'
 }
 
 
 function getRiskText(score) {
-  const label = riskLabel(score)?.toUpperCase()
+  const label =
+    riskLabel(score)?.toUpperCase()
 
-  if (label === 'HIGH') return 'High Risk'
-  if (label === 'MEDIUM') return 'Medium Risk'
+  if (label === 'HIGH') {
+    return 'High Risk'
+  }
+
+  if (label === 'MEDIUM') {
+    return 'Medium Risk'
+  }
 
   return 'Low Risk'
 }
@@ -198,47 +283,50 @@ export function GisPage() {
   const {
     projects,
     openProject,
-
-    /*
-     * GIS filter state stored in AppContext.
-     * This allows GIS selections to be reused by
-     * other pages such as Projects.
-     */
-
     setGisStateFilter,
     setGisDistrictFilter,
   } = useApp()
 
 
   /* -------------------------------------------------------
-     LOCAL GIS FILTER STATE
+     FILTER STATE
      ------------------------------------------------------- */
 
-  const [selectedState, setSelectedState] = useState('All')
-  const [selectedDistrict, setSelectedDistrict] = useState('All')
+  const [selectedState, setSelectedState] =
+    useState('All')
 
-  const [riskFilter, setRiskFilter] = useState('All')
-  const [categoryFilter, setCategoryFilter] = useState('All')
+  const [selectedDistrict, setSelectedDistrict] =
+    useState('All')
 
-  const [selectedMarker, setSelectedMarker] = useState(null)
+  const [riskFilter, setRiskFilter] =
+    useState('All')
+
+  const [categoryFilter, setCategoryFilter] =
+    useState('All')
+
+  const [selectedMarker, setSelectedMarker] =
+    useState(null)
 
 
   /* -------------------------------------------------------
      PROJECT CATEGORIES
+
+     Must match mockData category values.
      ------------------------------------------------------- */
 
   const categoriesList = [
     'All',
-    'Roads',
+    'Road',
     'Water',
     'Education',
     'Health',
     'Sanitation',
+    'Community Infrastructure',
   ]
 
 
   /* -------------------------------------------------------
-     STATES FROM ACTUAL PROJECT DATA
+     STATES
      ------------------------------------------------------- */
 
   const statesList = useMemo(() => {
@@ -256,9 +344,6 @@ export function GisPage() {
 
   /* -------------------------------------------------------
      DISTRICTS
-
-     If a state is selected, only districts belonging
-     to that state are shown.
      ------------------------------------------------------- */
 
   const districtsList = useMemo(() => {
@@ -284,9 +369,6 @@ export function GisPage() {
 
   /* -------------------------------------------------------
      FILTERED PROJECTS
-
-     These are the projects currently represented by
-     the markers on the map.
      ------------------------------------------------------- */
 
   const filteredProjects = useMemo(() => {
@@ -309,14 +391,17 @@ export function GisPage() {
 
       const riskMatch =
         riskFilter === 'All' ||
-        projectRisk === riskFilter.toUpperCase()
+        projectRisk ===
+          riskFilter.toUpperCase()
 
 
       const categoryMatch =
         categoryFilter === 'All' ||
         project.category
           ?.toLowerCase()
-          .includes(categoryFilter.toLowerCase())
+          .includes(
+            categoryFilter.toLowerCase()
+          )
 
 
       return (
@@ -340,9 +425,7 @@ export function GisPage() {
   /* -------------------------------------------------------
      AREA PROJECTS
 
-     This intentionally ignores risk/category filters.
-     It tells us the actual size of the selected
-     geographic area.
+     Ignores risk/category filters.
      ------------------------------------------------------- */
 
   const selectedAreaProjects = useMemo(() => {
@@ -357,7 +440,10 @@ export function GisPage() {
         selectedDistrict === 'All' ||
         project.district === selectedDistrict
 
-      return stateMatch && districtMatch
+      return (
+        stateMatch &&
+        districtMatch
+      )
 
     })
 
@@ -372,44 +458,49 @@ export function GisPage() {
      RISK COUNTS
      ------------------------------------------------------- */
 
-  const highRiskCount = filteredProjects.filter(
-    (project) =>
-      riskLabel(project.score)?.toUpperCase() === 'HIGH'
-  ).length
+  const highRiskCount =
+    filteredProjects.filter(
+      (project) =>
+        riskLabel(project.score)
+          ?.toUpperCase() === 'HIGH'
+    ).length
 
 
-  const mediumRiskCount = filteredProjects.filter(
-    (project) =>
-      riskLabel(project.score)?.toUpperCase() === 'MEDIUM'
-  ).length
+  const mediumRiskCount =
+    filteredProjects.filter(
+      (project) =>
+        riskLabel(project.score)
+          ?.toUpperCase() === 'MEDIUM'
+    ).length
 
 
-  const lowRiskCount = filteredProjects.filter(
-    (project) =>
-      riskLabel(project.score)?.toUpperCase() === 'LOW'
-  ).length
+  const lowRiskCount =
+    filteredProjects.filter(
+      (project) =>
+        riskLabel(project.score)
+          ?.toUpperCase() === 'LOW'
+    ).length
 
 
   /* -------------------------------------------------------
      AREA AVERAGE RISK
      ------------------------------------------------------- */
 
-  const averageRisk = selectedAreaProjects.length
-    ? Math.round(
-        selectedAreaProjects.reduce(
-          (sum, project) =>
-            sum + Number(project.score || 0),
-          0
-        ) / selectedAreaProjects.length
-      )
-    : 0
+  const averageRisk =
+    selectedAreaProjects.length
+      ? Math.round(
+          selectedAreaProjects.reduce(
+            (sum, project) =>
+              sum + Number(project.score || 0),
+            0
+          ) /
+            selectedAreaProjects.length
+        )
+      : 0
 
 
   /* -------------------------------------------------------
-     AREA EXPENDITURE
-
-     Project expenditure is represented as percentage
-     in the current mock data.
+     AREA AVERAGE EXPENDITURE
      ------------------------------------------------------- */
 
   const averageExpenditure =
@@ -417,15 +508,98 @@ export function GisPage() {
       ? Math.round(
           selectedAreaProjects.reduce(
             (sum, project) =>
-              sum + Number(project.expenditure || 0),
+              sum +
+              Number(
+                project.expenditure || 0
+              ),
             0
-          ) / selectedAreaProjects.length
+          ) /
+            selectedAreaProjects.length
         )
       : 0
 
 
   /* -------------------------------------------------------
-     RESET
+     NEARBY PROJECTS
+
+     Important:
+     Nearby calculation is based on ALL projects,
+     not only currently filtered projects.
+
+     This allows investigation of geographically
+     connected works even when another filter is active.
+     ------------------------------------------------------- */
+
+  const nearbyProjects = useMemo(() => {
+
+    if (!selectedMarker) {
+      return []
+    }
+
+    const selectedCoordinates =
+      getCoordinates(selectedMarker)
+
+    return projects
+      .filter(
+        (project) =>
+          project.id !== selectedMarker.id
+      )
+      .map((project, index) => {
+
+        const coordinates =
+          getCoordinates(project, index)
+
+        const distance =
+          calculateDistanceKm(
+            selectedCoordinates,
+            coordinates
+          )
+
+        const proximity =
+          getProximityLevel(distance)
+
+        let comparison = null
+
+        try {
+          comparison =
+            compareProjects(
+              selectedMarker,
+              project
+            )
+        } catch (error) {
+          console.warn(
+            'Duplicate comparison failed:',
+            error
+          )
+        }
+
+        return {
+          project,
+          coordinates,
+          distance,
+          proximity,
+          comparison,
+        }
+
+      })
+      .filter(
+        (item) =>
+          item.distance <= 10
+      )
+      .sort(
+        (a, b) =>
+          a.distance - b.distance
+      )
+      .slice(0, 5)
+
+  }, [
+    projects,
+    selectedMarker,
+  ])
+
+
+  /* -------------------------------------------------------
+     RESET FILTERS
      ------------------------------------------------------- */
 
   const resetFilters = () => {
@@ -437,10 +611,6 @@ export function GisPage() {
     setCategoryFilter('All')
 
     setSelectedMarker(null)
-
-    /*
-     * Clear global GIS filters too.
-     */
 
     setGisStateFilter('All')
     setGisDistrictFilter('All')
@@ -454,11 +624,6 @@ export function GisPage() {
   const handleStateChange = (value) => {
 
     setSelectedState(value)
-
-    /*
-     * A district belongs to a state.
-     * Therefore changing state must reset district.
-     */
 
     setSelectedDistrict('All')
 
@@ -483,8 +648,11 @@ export function GisPage() {
   }
 
 
-  return (
+  /* =======================================================
+     RENDER
+     ======================================================= */
 
+  return (
     <div className="gis-page-container">
 
 
@@ -505,9 +673,9 @@ export function GisPage() {
           </h2>
 
           <p>
-            Geographic view of MPLADS works, risk
-            signals, and project-level anomalies
-            for investigation.
+            Geographic view of MPLADS works,
+            risk signals, project overlap and
+            investigation evidence.
           </p>
 
         </div>
@@ -518,11 +686,8 @@ export function GisPage() {
           className="secondary-btn gis-reset-btn"
           onClick={resetFilters}
         >
-
           <RefreshCw size={15} />
-
           Reset Filters
-
         </button>
 
       </div>
@@ -546,7 +711,9 @@ export function GisPage() {
           <select
             value={selectedState}
             onChange={(event) =>
-              handleStateChange(event.target.value)
+              handleStateChange(
+                event.target.value
+              )
             }
           >
 
@@ -580,7 +747,9 @@ export function GisPage() {
 
           <select
             value={selectedDistrict}
-            disabled={selectedState === 'All'}
+            disabled={
+              selectedState === 'All'
+            }
             onChange={(event) =>
               handleDistrictChange(
                 event.target.value
@@ -592,16 +761,18 @@ export function GisPage() {
               All Districts
             </option>
 
-            {districtsList.map((district) => (
+            {districtsList.map(
+              (district) => (
 
-              <option
-                key={district}
-                value={district}
-              >
-                {district}
-              </option>
+                <option
+                  key={district}
+                  value={district}
+                >
+                  {district}
+                </option>
 
-            ))}
+              )
+            )}
 
           </select>
 
@@ -619,7 +790,9 @@ export function GisPage() {
           <select
             value={riskFilter}
             onChange={(event) =>
-              setRiskFilter(event.target.value)
+              setRiskFilter(
+                event.target.value
+              )
             }
           >
 
@@ -661,16 +834,18 @@ export function GisPage() {
             }
           >
 
-            {categoriesList.map((category) => (
+            {categoriesList.map(
+              (category) => (
 
-              <option
-                key={category}
-                value={category}
-              >
-                {category}
-              </option>
+                <option
+                  key={category}
+                  value={category}
+                >
+                  {category}
+                </option>
 
-            ))}
+              )
+            )}
 
           </select>
 
@@ -697,7 +872,7 @@ export function GisPage() {
 
 
       {/* =================================================
-          MAP
+          MAP CONTAINER
           ================================================= */}
 
       <div className="gis-map-container">
@@ -718,7 +893,7 @@ export function GisPage() {
               </strong>
 
               <span>
-                Live project risk intelligence
+                Project risk + spatial overlap intelligence
               </span>
 
             </div>
@@ -731,41 +906,27 @@ export function GisPage() {
           <div className="gis-map-legend">
 
             <span>
-
               <i className="legend-dot high" />
-
               High
-
               <b>
                 {highRiskCount}
               </b>
-
             </span>
 
-
             <span>
-
               <i className="legend-dot medium" />
-
               Medium
-
               <b>
                 {mediumRiskCount}
               </b>
-
             </span>
 
-
             <span>
-
               <i className="legend-dot low" />
-
               Low
-
               <b>
                 {lowRiskCount}
               </b>
-
             </span>
 
           </div>
@@ -773,10 +934,11 @@ export function GisPage() {
         </div>
 
 
-        {/* MAP BODY */}
+        {/* =================================================
+            MAP BODY
+            ================================================= */}
 
         <div className="gis-map-body">
-
 
           <MapContainer
             center={[22.5, 79]}
@@ -797,9 +959,9 @@ export function GisPage() {
             <MapControls />
 
 
-            {/* =========================================
+            {/* =============================================
                 PROJECT MARKERS
-                ========================================= */}
+                ============================================= */}
 
             {filteredProjects.map(
               (project, index) => {
@@ -810,30 +972,111 @@ export function GisPage() {
                     index
                   )
 
-
                 const color =
-                  getRiskColor(project.score)
-
+                  getRiskColor(
+                    project.score
+                  )
 
                 const risk =
-                  getRiskText(project.score)
+                  getRiskText(
+                    project.score
+                  )
+
+
+                /*
+                 * Determine whether this marker is
+                 * geographically close to the selected
+                 * project.
+                 */
+
+                let isNearby = false
+                let overlapScore = null
+
+                if (selectedMarker) {
+
+                  const selectedCoordinates =
+                    getCoordinates(
+                      selectedMarker
+                    )
+
+                  const distance =
+                    calculateDistanceKm(
+                      selectedCoordinates,
+                      coordinates
+                    )
+
+                  isNearby =
+                    project.id !==
+                      selectedMarker.id &&
+                    distance <= 10
+
+                  try {
+
+                    if (
+                      project.id !==
+                      selectedMarker.id
+                    ) {
+                      const comparison =
+                        compareProjects(
+                          selectedMarker,
+                          project
+                        )
+
+                      overlapScore =
+                        comparison?.score ?? null
+                    }
+
+                  } catch (error) {
+
+                    overlapScore = null
+
+                  }
+
+                }
 
 
                 return (
-
                   <CircleMarker
                     key={project.id}
                     center={coordinates}
-                    radius={8}
+                    radius={
+                      project.id ===
+                      selectedMarker?.id
+                        ? 12
+                        : isNearby
+                          ? 10
+                          : 8
+                    }
                     pathOptions={{
-                      color: '#ffffff',
-                      weight: 2,
+                      color:
+                        project.id ===
+                        selectedMarker?.id
+                          ? '#111827'
+                          : isNearby
+                            ? '#111827'
+                            : '#ffffff',
+
+                      weight:
+                        project.id ===
+                        selectedMarker?.id
+                          ? 3
+                          : isNearby
+                            ? 3
+                            : 2,
+
                       fillColor: color,
-                      fillOpacity: 0.95,
+
+                      fillOpacity:
+                        project.id ===
+                        selectedMarker?.id
+                          ? 1
+                          : 0.95,
                     }}
                     eventHandlers={{
                       click: () =>
-                        setSelectedMarker(project),
+                        setSelectedMarker(
+                          project
+                        ),
                     }}
                   >
 
@@ -863,9 +1106,7 @@ export function GisPage() {
                         {/* PROJECT NAME */}
 
                         <div className="gis-popup-title">
-
                           {project.name}
-
                         </div>
 
 
@@ -907,6 +1148,25 @@ export function GisPage() {
                         </div>
 
 
+                        {/* OVERLAP */}
+
+                        {selectedMarker &&
+                          project.id !==
+                            selectedMarker.id &&
+                          overlapScore !== null && (
+                            <div
+                              style={{
+                                marginTop: 8,
+                                fontSize: 11,
+                                fontWeight: 700,
+                              }}
+                            >
+                              Spatial comparison:{' '}
+                              {overlapScore}%
+                            </div>
+                          )}
+
+
                         {/* INVESTIGATION */}
 
                         <button
@@ -921,7 +1181,9 @@ export function GisPage() {
 
                           Investigate
 
-                          <ArrowRight size={13} />
+                          <ArrowRight
+                            size={13}
+                          />
 
                         </button>
 
@@ -930,7 +1192,6 @@ export function GisPage() {
                     </Popup>
 
                   </CircleMarker>
-
                 )
 
               }
@@ -971,6 +1232,8 @@ export function GisPage() {
             <div className="map-card-floating">
 
 
+              {/* CLOSE */}
+
               <button
                 type="button"
                 className="gis-close-btn"
@@ -979,9 +1242,7 @@ export function GisPage() {
                 }
                 aria-label="Close project details"
               >
-
                 <X size={17} />
-
               </button>
 
 
@@ -1092,6 +1353,7 @@ export function GisPage() {
                   physical execution by{' '}
 
                   <strong>
+
                     {Math.abs(
                       Number(
                         selectedMarker.expenditure
@@ -1100,7 +1362,9 @@ export function GisPage() {
                         selectedMarker.physical
                       )
                     )}
+
                     %
+
                   </strong>
 
                 </span>
@@ -1108,7 +1372,238 @@ export function GisPage() {
               </div>
 
 
-              {/* INVESTIGATE */}
+              {/* =================================================
+                  NEARBY PROJECTS
+                  ================================================= */}
+
+              <div className="gis-nearby-section">
+
+                <div className="gis-nearby-header">
+
+                  <div>
+
+                    <strong>
+                      Nearby Works
+                    </strong>
+
+                    <span>
+                      Spatially connected projects
+                    </span>
+
+                  </div>
+
+                  <span className="gis-nearby-count">
+                    {nearbyProjects.length}
+                  </span>
+
+                </div>
+
+
+                {nearbyProjects.length === 0 ? (
+
+                  <div className="gis-nearby-empty">
+
+                    No other project found
+                    within 10 km.
+
+                  </div>
+
+                ) : (
+
+                  <div className="gis-nearby-list">
+
+                    {nearbyProjects.map(
+                      ({
+                        project,
+                        distance,
+                        proximity,
+                        comparison,
+                      }) => (
+
+                        <div
+                          key={project.id}
+                          className="gis-nearby-item"
+                        >
+
+
+                          {/* TOP */}
+
+                          <div className="gis-nearby-top">
+
+                            <div className="gis-nearby-project-info">
+
+                              <strong>
+                                {project.name}
+                              </strong>
+
+                              <span>
+                                {project.id}
+                              </span>
+
+                            </div>
+
+
+                            <div className="gis-nearby-distance">
+
+                              <strong>
+                                {distance.toFixed(1)} km
+                              </strong>
+
+                              <span
+                                className={
+                                  `gis-proximity ${proximity.className}`
+                                }
+                              >
+                                {proximity.label}
+                              </span>
+
+                            </div>
+
+                          </div>
+
+
+                          {/* PROJECT META */}
+
+                          <div className="gis-nearby-meta">
+
+                            <span>
+                              {project.district}
+                            </span>
+
+                            <span>
+                              {project.category}
+                            </span>
+
+                            <span
+                              style={{
+                                color:
+                                  getRiskColor(
+                                    project.score
+                                  ),
+                              }}
+                            >
+                              Risk {project.score}
+                            </span>
+
+                          </div>
+
+
+                          {/* =================================================
+                              DUPLICATE / OVERLAP SCORE
+                              ================================================= */}
+
+                          {comparison && (
+
+                            <div className="gis-overlap-row">
+
+                              <div className="gis-overlap-main">
+
+                                <GitCompare
+                                  size={12}
+                                />
+
+                                <span>
+                                  Work overlap
+                                </span>
+
+                              </div>
+
+
+                              <span
+                                className={
+                                  `gis-overlap-score ${
+                                    comparison.colorClass ||
+                                    'duplicate-clear'
+                                  }`
+                                }
+                              >
+                                {comparison.score}%
+                              </span>
+
+                            </div>
+
+                          )}
+
+
+                          {/* =================================================
+                              WHY LINKED
+                              ================================================= */}
+
+                          {comparison &&
+                            comparison.reasons?.length >
+                              0 && (
+
+                              <div className="gis-overlap-reasons">
+
+                                <span>
+
+                                  <ShieldAlert
+                                    size={10}
+                                  />
+
+                                  {comparison.reasons
+                                    .slice(0, 2)
+                                    .join(' · ')}
+
+                                </span>
+
+                              </div>
+
+                            )}
+
+
+                          {/* ACTION */}
+
+                          <div className="gis-nearby-actions">
+
+                            <button
+                              type="button"
+                              className="gis-nearby-investigate"
+                              onClick={() =>
+                                openProject(
+                                  project.id
+                                )
+                              }
+                            >
+
+                              Investigate
+
+                              <ArrowRight
+                                size={12}
+                              />
+
+                            </button>
+
+
+                            {comparison &&
+                              comparison.score >=
+                                35 && (
+
+                                <span className="gis-overlap-indicator">
+
+                                  Potential overlap
+
+                                </span>
+
+                              )}
+
+                          </div>
+
+                        </div>
+
+                      )
+                    )}
+
+                  </div>
+
+                )}
+
+              </div>
+
+
+              {/* =================================================
+                  PRIMARY INVESTIGATION ACTION
+                  ================================================= */}
 
               <button
                 type="button"
@@ -1150,7 +1645,6 @@ export function GisPage() {
               SELECTED GEOGRAPHIC AREA
             </div>
 
-
             <h2>
 
               {selectedDistrict !== 'All'
@@ -1159,10 +1653,10 @@ export function GisPage() {
 
             </h2>
 
-
             <p>
 
-              {selectedAreaProjects.length}{' '}
+              {selectedAreaProjects.length}
+              {' '}
               projects monitored
 
               {highRiskCount > 0
@@ -1175,6 +1669,7 @@ export function GisPage() {
 
 
           <div className="gis-area-actions">
+
 
             <div className="gis-area-mini-stat">
 
@@ -1207,27 +1702,24 @@ export function GisPage() {
               className="primary-btn"
               onClick={() => {
 
-                /*
-                 * For now this selects the highest-risk
-                 * project in the selected geographic area.
-                 *
-                 * Projects-page global filtering will use
-                 * gisStateFilter / gisDistrictFilter from
-                 * AppContext in the next step.
-                 */
-
                 const highestRiskProject =
                   [...selectedAreaProjects]
                     .sort(
                       (a, b) =>
-                        Number(b.score || 0) -
-                        Number(a.score || 0)
+                        Number(
+                          b.score || 0
+                        ) -
+                        Number(
+                          a.score || 0
+                        )
                     )[0]
 
                 if (highestRiskProject) {
+
                   openProject(
                     highestRiskProject.id
                   )
+
                 }
 
               }}
@@ -1249,7 +1741,6 @@ export function GisPage() {
       )}
 
     </div>
-
   )
 }
 

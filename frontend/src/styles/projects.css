@@ -1600,3 +1600,22 @@
     flex-wrap: wrap;
   }
 }
+
+/* =========================================================
+   PROJECT ASSET VERIFICATION STATUS
+========================================================= */
+
+.asset-status-badge.verified {
+  color: #15803d;
+  background: #f0fdf4;
+}
+
+.asset-status-badge.pending {
+  color: #b45309;
+  background: #fffbeb;
+}
+
+.asset-status-badge.mismatch {
+  color: #b91c1c;
+  background: #fef2f2;
+}

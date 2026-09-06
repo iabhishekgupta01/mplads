@@ -1,9 +1,22 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Eye, Filter, Plus, Search, X } from 'lucide-react'
+import {
+  Eye,
+  Filter,
+  Plus,
+  Search,
+  X,
+  MapPin,
+} from 'lucide-react'
+
 import { useApp } from '../context/AppContext.jsx'
-import { riskLabel } from '../utils/formatters.js'
+import {
+  formatCurrency,
+  riskLabel,
+} from '../utils/formatters.js'
+
 
 export function Projects() {
+
   const {
     projects,
     openProject,
@@ -14,6 +27,11 @@ export function Projects() {
     gisDistrictFilter,
     setGisDistrictFilter,
   } = useApp()
+
+
+  /* =========================================================
+     LOCAL FILTER STATE
+  ========================================================= */
 
   const [district, setDistrict] = useState(
     gisDistrictFilter !== 'All'
@@ -26,39 +44,59 @@ export function Projects() {
   )
 
   const [status, setStatus] = useState('All')
+
   const [workType, setWorkType] = useState('All')
+
   const [searchQuery, setSearchQuery] = useState('')
+
   const [currentPage, setCurrentPage] = useState(1)
 
 
-  /* =====================================================
+  /* =========================================================
+     DATA SAFETY
+     
+     Prevents the page from breaking if a project has
+     incomplete prototype data.
+  ========================================================= */
+
+  const safeProjects = Array.isArray(projects)
+    ? projects
+    : []
+
+
+  /* =========================================================
      STATES
-     ===================================================== */
+  ========================================================= */
 
   const states = useMemo(() => {
+
     return Array.from(
       new Set(
-        projects
+        safeProjects
           .map((project) => project?.state)
           .filter(Boolean)
       )
     ).sort()
-  }, [projects])
+
+  }, [safeProjects])
 
 
-  /* =====================================================
+  /* =========================================================
      DISTRICTS
 
-     District list changes according to selected state.
-     ===================================================== */
+     Districts are dynamically filtered by selected state.
+  ========================================================= */
 
   const districts = useMemo(() => {
+
     const source =
       state === 'All'
-        ? projects
-        : projects.filter(
-            (project) => project.state === state
+        ? safeProjects
+        : safeProjects.filter(
+            (project) =>
+              project?.state === state
           )
+
 
     return Array.from(
       new Set(
@@ -67,138 +105,217 @@ export function Projects() {
           .filter(Boolean)
       )
     ).sort()
-  }, [projects, state])
+
+  }, [safeProjects, state])
 
 
-  /* =====================================================
-     KEEP LOCAL FILTERS IN SYNC WITH GIS
-     ===================================================== */
+  /* =========================================================
+     WORK TYPES
+
+     Uses actual categories from dataset instead of keeping
+     the filter hardcoded.
+  ========================================================= */
+
+  const workTypes = useMemo(() => {
+
+    return Array.from(
+      new Set(
+        safeProjects
+          .map((project) => project?.category)
+          .filter(Boolean)
+      )
+    ).sort()
+
+  }, [safeProjects])
+
+
+  /* =========================================================
+     STATUS TYPES
+
+     Automatically derives available project statuses.
+  ========================================================= */
+
+  const statuses = useMemo(() => {
+
+    return Array.from(
+      new Set(
+        safeProjects
+          .map((project) => project?.status)
+          .filter(Boolean)
+      )
+    ).sort()
+
+  }, [safeProjects])
+
+
+  /* =========================================================
+     KEEP LOCATION FILTER IN SYNC WITH GIS
+  ========================================================= */
 
   useEffect(() => {
-    if (gisStateFilter && gisStateFilter !== 'All') {
+
+    if (
+      gisStateFilter &&
+      gisStateFilter !== 'All'
+    ) {
       setState(gisStateFilter)
     }
+
   }, [gisStateFilter])
 
 
   useEffect(() => {
-    if (gisDistrictFilter && gisDistrictFilter !== 'All') {
+
+    if (
+      gisDistrictFilter &&
+      gisDistrictFilter !== 'All'
+    ) {
       setDistrict(gisDistrictFilter)
     }
+
   }, [gisDistrictFilter])
 
 
-  /* =====================================================
+  /* =========================================================
      STATE CHANGE
-     ===================================================== */
+  ========================================================= */
 
   const handleStateChange = (value) => {
+
     setState(value)
 
-    /*
-     * Changing state invalidates the currently selected
-     * district.
-     */
-
+    // State change invalidates current district.
     setDistrict('All')
 
     setGisStateFilter(value)
+
     setGisDistrictFilter('All')
 
     setCurrentPage(1)
+
   }
 
 
-  /* =====================================================
+  /* =========================================================
      DISTRICT CHANGE
-     ===================================================== */
+  ========================================================= */
 
   const handleDistrictChange = (value) => {
+
     setDistrict(value)
+
     setGisDistrictFilter(value)
+
     setCurrentPage(1)
+
   }
 
 
-  /* =====================================================
-     CLEAR GIS LOCATION FILTER
-     ===================================================== */
+  /* =========================================================
+     CLEAR LOCATION FILTER
+  ========================================================= */
 
   const clearLocationFilter = () => {
+
     setState('All')
+
     setDistrict('All')
 
     setGisStateFilter('All')
+
     setGisDistrictFilter('All')
 
     setCurrentPage(1)
+
   }
 
 
-  /* =====================================================
-     FILTER PROJECTS
-     ===================================================== */
+  /* =========================================================
+     SEARCH + FILTER
+  ========================================================= */
 
   const filtered = useMemo(() => {
-    return projects.filter((project) => {
 
-      const search =
-        searchQuery.toLowerCase().trim()
-
-      const matchesSearch =
-        !search ||
-        project.id
-          .toLowerCase()
-          .includes(search) ||
-        project.name
-          .toLowerCase()
-          .includes(search) ||
-        project.district
-          .toLowerCase()
-          .includes(search) ||
-        project.state
-          .toLowerCase()
-          .includes(search)
+    const search =
+      searchQuery
+        .toLowerCase()
+        .trim()
 
 
-      const matchesState =
-        state === 'All' ||
-        project.state === state
+    return safeProjects.filter(
+      (project) => {
+
+        const projectId =
+          String(project?.id || '')
+            .toLowerCase()
+
+        const projectName =
+          String(project?.name || '')
+            .toLowerCase()
+
+        const projectDistrict =
+          String(project?.district || '')
+            .toLowerCase()
+
+        const projectState =
+          String(project?.state || '')
+            .toLowerCase()
+
+        const projectCategory =
+          String(project?.category || '')
+            .toLowerCase()
+
+        const matchesSearch =
+          !search ||
+          projectId.includes(search) ||
+          projectName.includes(search) ||
+          projectDistrict.includes(search) ||
+          projectState.includes(search) ||
+          projectCategory.includes(search)
 
 
-      const matchesDistrict =
-        district === 'All' ||
-        project.district === district
+        const matchesState =
+          state === 'All' ||
+          project?.state === state
 
 
-      const matchesStatus =
-        status === 'All' ||
-        project.status === status
+        const matchesDistrict =
+          district === 'All' ||
+          project?.district === district
 
 
-      const matchesRisk =
-        riskFilter === 'All' ||
-        riskLabel(project.score)
-          .toUpperCase() ===
-          riskFilter.toUpperCase()
+        const matchesStatus =
+          status === 'All' ||
+          project?.status === status
 
 
-      const matchesType =
-        workType === 'All' ||
-        project.category === workType
+        const matchesRisk =
+          riskFilter === 'All' ||
+          riskLabel(
+            Number(project?.score || 0)
+          ).toUpperCase() ===
+            riskFilter.toUpperCase()
 
 
-      return (
-        matchesSearch &&
-        matchesState &&
-        matchesDistrict &&
-        matchesStatus &&
-        matchesRisk &&
-        matchesType
-      )
-    })
+        const matchesType =
+          workType === 'All' ||
+          project?.category === workType
+
+
+        return (
+          matchesSearch &&
+          matchesState &&
+          matchesDistrict &&
+          matchesStatus &&
+          matchesRisk &&
+          matchesType
+        )
+
+      }
+    )
+
   }, [
-    projects,
+    safeProjects,
     searchQuery,
     state,
     district,
@@ -208,12 +325,14 @@ export function Projects() {
   ])
 
 
-  /* =====================================================
-     RESET PAGINATION WHEN FILTERS CHANGE
-     ===================================================== */
+  /* =========================================================
+     RESET PAGINATION
+  ========================================================= */
 
   useEffect(() => {
+
     setCurrentPage(1)
+
   }, [
     searchQuery,
     state,
@@ -224,22 +343,154 @@ export function Projects() {
   ])
 
 
-  /* =====================================================
-     DISPLAY COUNT
+  /* =========================================================
+     SUMMARY METRICS
 
-     Current project seed is a demo dataset, so don't
-     pretend it actually contains 1248 records.
-     ===================================================== */
+     These are calculated from actual project fields.
+     They help demonstrate the MPLADS monitoring model.
+  ========================================================= */
 
-  const totalEntries = filtered.length
+  const summary = useMemo(() => {
 
+    const totalSanctioned =
+      filtered.reduce(
+        (sum, project) =>
+          sum +
+          Number(
+            project?.sanction?.sanctionedAmount ??
+            project?.amount ??
+            0
+          ),
+        0
+      )
+
+
+    const totalExpenditure =
+      filtered.reduce(
+        (sum, project) =>
+          sum +
+          Number(
+            project?.financial?.utilizedAmount ??
+            project?.cost?.actualExpenditure ??
+            0
+          ),
+        0
+      )
+
+
+    const highRisk =
+      filtered.filter(
+        (project) =>
+          Number(project?.score || 0) >= 80
+      ).length
+
+
+    const delayed =
+      filtered.filter(
+        (project) =>
+          String(project?.status || '')
+            .toLowerCase() === 'delayed'
+      ).length
+
+
+    const pendingAssetVerification =
+      filtered.filter(
+        (project) =>
+          project?.asset?.verificationStatus !==
+          'Verified'
+      ).length
+
+
+    return {
+      totalSanctioned,
+      totalExpenditure,
+      highRisk,
+      delayed,
+      pendingAssetVerification,
+    }
+
+  }, [filtered])
+
+
+  /* =========================================================
+     CURRENCY FORMATTER
+
+     Keeps compatibility even if older data contains
+     missing values.
+  ========================================================= */
+
+  const currency = (amount) => {
+
+    try {
+
+      return formatCurrency(
+        Number(amount || 0)
+      )
+
+    } catch {
+
+      return `₹${Number(
+        amount || 0
+      ).toLocaleString('en-IN')}`
+
+    }
+
+  }
+
+
+  /* =========================================================
+     ASSET STATUS HELPER
+  ========================================================= */
+
+  const getAssetStatus = (project) => {
+
+    const status =
+      project?.asset?.verificationStatus
+
+
+    if (status === 'Verified') {
+
+      return {
+        label: 'Verified',
+        className: 'verified',
+      }
+
+    }
+
+
+    if (
+      status === 'Mismatch' ||
+      status === 'Physical Mismatch'
+    ) {
+
+      return {
+        label: 'Mismatch',
+        className: 'mismatch',
+      }
+
+    }
+
+
+    return {
+      label: 'Pending',
+      className: 'pending',
+    }
+
+  }
+
+
+  /* =========================================================
+     RENDER
+  ========================================================= */
 
   return (
+
     <div className="projects-page-container">
 
-      {/* =================================================
-          HEADER
-          ================================================= */}
+
+      {/* =====================================================
+          PAGE HEADER
+      ===================================================== */}
 
       <div
         style={{
@@ -247,6 +498,7 @@ export function Projects() {
           justifyContent: 'space-between',
           alignItems: 'flex-start',
           marginBottom: 16,
+          gap: 16,
         }}
       >
 
@@ -256,21 +508,25 @@ export function Projects() {
             Home / <span>Projects</span>
           </div>
 
+
           <h2
             style={{
               fontSize: 22,
               fontWeight: 800,
               color: '#0f172a',
+              margin: 0,
             }}
           >
             Projects
           </h2>
 
+
           <p
             style={{
               fontSize: 13,
               color: '#64748b',
-              marginTop: 2,
+              marginTop: 4,
+              marginBottom: 0,
             }}
           >
             Search and monitor MPLADS works
@@ -281,27 +537,163 @@ export function Projects() {
 
         <button
           className="primary-btn"
+          type="button"
           onClick={() =>
             alert(
-              'Add Project dialog placeholder.'
+              'Add Project workflow will be connected to the backend.'
             )
           }
         >
+
           <Plus size={16} />
+
           Add Project
+
         </button>
 
       </div>
 
 
-      {/* =================================================
-          GIS CONTEXT BANNER
 
-          Only appears when Projects was reached from
-          a geographic selection.
-          ================================================= */}
+      {/* =====================================================
+          MPLADS MONITORING SUMMARY
+      ===================================================== */}
 
-      {(state !== 'All' || district !== 'All') && (
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns:
+            'repeat(4, minmax(0, 1fr))',
+          gap: 10,
+          marginBottom: 16,
+        }}
+      >
+
+        <div className="panel">
+
+          <div
+            style={{
+              fontSize: 10,
+              color: '#64748b',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+            }}
+          >
+            Sanctioned Value
+          </div>
+
+          <div
+            style={{
+              marginTop: 5,
+              fontSize: 18,
+              fontWeight: 800,
+              color: '#0f172a',
+            }}
+          >
+            {currency(
+              summary.totalSanctioned
+            )}
+          </div>
+
+        </div>
+
+
+        <div className="panel">
+
+          <div
+            style={{
+              fontSize: 10,
+              color: '#64748b',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+            }}
+          >
+            Actual Expenditure
+          </div>
+
+          <div
+            style={{
+              marginTop: 5,
+              fontSize: 18,
+              fontWeight: 800,
+              color: '#0f172a',
+            }}
+          >
+            {currency(
+              summary.totalExpenditure
+            )}
+          </div>
+
+        </div>
+
+
+        <div className="panel">
+
+          <div
+            style={{
+              fontSize: 10,
+              color: '#64748b',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+            }}
+          >
+            High Risk
+          </div>
+
+          <div
+            style={{
+              marginTop: 5,
+              fontSize: 18,
+              fontWeight: 800,
+              color: '#b91c1c',
+            }}
+          >
+            {summary.highRisk}
+          </div>
+
+        </div>
+
+
+        <div className="panel">
+
+          <div
+            style={{
+              fontSize: 10,
+              color: '#64748b',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+            }}
+          >
+            Asset Verification Pending
+          </div>
+
+          <div
+            style={{
+              marginTop: 5,
+              fontSize: 18,
+              fontWeight: 800,
+              color: '#b45309',
+            }}
+          >
+            {summary.pendingAssetVerification}
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+      {/* =====================================================
+          GIS CONTEXT
+      ===================================================== */}
+
+      {(state !== 'All' ||
+        district !== 'All') && (
 
         <div className="projects-location-context">
 
@@ -328,10 +720,15 @@ export function Projects() {
 
           <button
             type="button"
-            onClick={clearLocationFilter}
+            onClick={
+              clearLocationFilter
+            }
           >
+
             <X size={14} />
+
             Clear location
+
           </button>
 
         </div>
@@ -339,9 +736,10 @@ export function Projects() {
       )}
 
 
-      {/* =================================================
+
+      {/* =====================================================
           FILTER BAR
-          ================================================= */}
+      ===================================================== */}
 
       <div className="filter-bar-wrap">
 
@@ -383,6 +781,7 @@ export function Projects() {
         </div>
 
 
+
         {/* DISTRICT */}
 
         <div className="filter-group">
@@ -393,7 +792,9 @@ export function Projects() {
 
           <select
             value={district}
-            disabled={state === 'All'}
+            disabled={
+              state === 'All'
+            }
             onChange={(e) =>
               handleDistrictChange(
                 e.target.value
@@ -421,6 +822,7 @@ export function Projects() {
         </div>
 
 
+
         {/* STATUS */}
 
         <div className="filter-group">
@@ -432,7 +834,9 @@ export function Projects() {
           <select
             value={status}
             onChange={(e) =>
-              setStatus(e.target.value)
+              setStatus(
+                e.target.value
+              )
             }
           >
 
@@ -440,25 +844,21 @@ export function Projects() {
               All Status
             </option>
 
-            <option value="Ongoing">
-              Ongoing
-            </option>
+            {statuses.map((item) => (
 
-            <option value="Completed">
-              Completed
-            </option>
+              <option
+                key={item}
+                value={item}
+              >
+                {item}
+              </option>
 
-            <option value="Delayed">
-              Delayed
-            </option>
-
-            <option value="Under Review">
-              Under Review
-            </option>
+            ))}
 
           </select>
 
         </div>
+
 
 
         {/* RISK */}
@@ -499,6 +899,7 @@ export function Projects() {
         </div>
 
 
+
         {/* WORK TYPE */}
 
         <div className="filter-group">
@@ -520,33 +921,21 @@ export function Projects() {
               All
             </option>
 
-            <option value="Road">
-              Road
-            </option>
+            {workTypes.map((item) => (
 
-            <option value="Community Infrastructure">
-              Community Hall
-            </option>
+              <option
+                key={item}
+                value={item}
+              >
+                {item}
+              </option>
 
-            <option value="Health">
-              Health
-            </option>
-
-            <option value="Water">
-              Water
-            </option>
-
-            <option value="Education">
-              Education
-            </option>
-
-            <option value="Sanitation">
-              Sanitation
-            </option>
+            ))}
 
           </select>
 
         </div>
+
 
 
         {/* SEARCH */}
@@ -579,6 +968,7 @@ export function Projects() {
         </div>
 
 
+
         <button
           className="secondary-btn"
           type="button"
@@ -593,9 +983,10 @@ export function Projects() {
       </div>
 
 
-      {/* =================================================
+
+      {/* =====================================================
           RESULT SUMMARY
-          ================================================= */}
+      ===================================================== */}
 
       <div className="projects-result-summary">
 
@@ -604,12 +995,13 @@ export function Projects() {
         </span>
 
         <strong>
-          {totalEntries}
+          {filtered.length}
         </strong>
 
         <span>
           matching projects
         </span>
+
 
         {(state !== 'All' ||
           district !== 'All') && (
@@ -629,9 +1021,10 @@ export function Projects() {
       </div>
 
 
-      {/* =================================================
+
+      {/* =====================================================
           PROJECT TABLE
-          ================================================= */}
+      ===================================================== */}
 
       <div
         className="panel"
@@ -650,23 +1043,15 @@ export function Projects() {
               <tr>
 
                 <th>
-                  Project ID
+                  Project
                 </th>
 
                 <th>
-                  Project Name
+                  Location
                 </th>
 
                 <th>
-                  District
-                </th>
-
-                <th>
-                  Status
-                </th>
-
-                <th>
-                  Progress
+                  Sanctioned
                 </th>
 
                 <th>
@@ -674,15 +1059,23 @@ export function Projects() {
                 </th>
 
                 <th>
-                  Risk Score
+                  Progress
                 </th>
 
                 <th>
-                  Risk Level
+                  Asset
                 </th>
 
                 <th>
-                  Actions
+                  Risk
+                </th>
+
+                <th>
+                  Status
+                </th>
+
+                <th>
+                  Action
                 </th>
 
               </tr>
@@ -692,187 +1085,534 @@ export function Projects() {
 
             <tbody>
 
-              {filtered.map((project) => {
+              {filtered.map(
+                (project) => {
 
-                const riskCategory =
-                  riskLabel(
-                    project.score
-                  ).toLowerCase()
-
-
-                const statusCategory =
-                  project.status
-                    .toLowerCase()
-                    .replace(/\s+/g, '-')
+                  const score =
+                    Number(
+                      project?.score || 0
+                    )
 
 
-                return (
+                  const riskCategory =
+                    riskLabel(
+                      score
+                    ).toLowerCase()
 
-                  <tr
-                    key={project.id}
-                    onClick={() =>
-                      openProject(
-                        project.id
+
+                  const statusCategory =
+                    String(
+                      project?.status || ''
+                    )
+                      .toLowerCase()
+                      .replace(
+                        /\s+/g,
+                        '-'
                       )
-                    }
-                  >
 
-                    <td
-                      style={{
-                        fontWeight: 700,
-                        color: '#1e293b',
-                      }}
+
+                  const sanctioned =
+                    Number(
+                      project?.sanction
+                        ?.sanctionedAmount ??
+                      project?.amount ??
+                      0
+                    )
+
+
+                  const actualExpenditure =
+                    Number(
+                      project?.financial
+                        ?.utilizedAmount ??
+                      project?.cost
+                        ?.actualExpenditure ??
+                      0
+                    )
+
+
+                  const physical =
+                    Number(
+                      project?.physical ??
+                      project?.asset
+                        ?.reportedCompletion ??
+                      0
+                    )
+
+
+                  const expenditurePercent =
+                    Number(
+                      project?.expenditure ??
+                      (
+                        sanctioned > 0
+                          ? (
+                              actualExpenditure /
+                              sanctioned
+                            ) * 100
+                          : 0
+                      )
+                    )
+
+
+                  const assetStatus =
+                    getAssetStatus(
+                      project
+                    )
+
+
+                  return (
+
+                    <tr
+                      key={
+                        project.id
+                      }
+                      onClick={() =>
+                        openProject(
+                          project.id
+                        )
+                      }
                     >
-                      {project.id}
-                    </td>
 
 
-                    <td
-                      style={{
-                        fontWeight: 600,
-                        color: '#0f172a',
-                      }}
-                    >
-                      {project.name}
-                    </td>
+                      {/* PROJECT */}
 
-
-                    <td>
-                      {project.district}
-                    </td>
-
-
-                    <td>
-
-                      <span
-                        className={`status-badge-clean ${statusCategory}`}
-                      >
-                        {project.status}
-                      </span>
-
-                    </td>
-
-
-                    <td>
-
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 8,
-                        }}
-                      >
+                      <td>
 
                         <div
                           style={{
-                            flex: 1,
-                            height: 6,
-                            background: '#e2e8f0',
-                            borderRadius: 3,
-                            overflow: 'hidden',
+                            minWidth: 180,
                           }}
                         >
 
                           <div
                             style={{
-                              height: '100%',
-                              width: `${project.physical}%`,
-                              background:
-                                project.physical < 40
-                                  ? '#f59e0b'
-                                  : '#16a34a',
-                              borderRadius: 3,
+                              fontSize: 11,
+                              fontWeight: 800,
+                              color: '#1e293b',
+                              marginBottom: 3,
                             }}
-                          />
+                          >
+                            {project.id}
+                          </div>
+
+
+                          <div
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 700,
+                              color: '#0f172a',
+                              lineHeight: 1.35,
+                            }}
+                          >
+                            {project.name}
+                          </div>
+
+
+                          <div
+                            style={{
+                              marginTop: 3,
+                              fontSize: 10,
+                              color: '#64748b',
+                            }}
+                          >
+                            {project.category ||
+                              'MPLADS Work'}
+                          </div>
 
                         </div>
 
+                      </td>
 
-                        <span
+
+
+                      {/* LOCATION */}
+
+                      <td>
+
+                        <div
                           style={{
-                            fontSize: 12,
-                            fontWeight: 700,
-                            width: 32,
+                            minWidth: 120,
                           }}
                         >
-                          {project.physical}%
+
+                          <div
+                            style={{
+                              fontWeight: 700,
+                              color: '#334155',
+                              fontSize: 11,
+                            }}
+                          >
+                            {project.district ||
+                              '—'}
+                          </div>
+
+
+                          <div
+                            style={{
+                              marginTop: 3,
+                              fontSize: 10,
+                              color: '#64748b',
+                            }}
+                          >
+                            {project.state ||
+                              '—'}
+                          </div>
+
+                        </div>
+
+                      </td>
+
+
+
+                      {/* SANCTION */}
+
+                      <td>
+
+                        <div
+                          style={{
+                            fontWeight: 800,
+                            color: '#0f172a',
+                            fontSize: 12,
+                          }}
+                        >
+                          {currency(
+                            sanctioned
+                          )}
+                        </div>
+
+
+                        <div
+                          style={{
+                            marginTop: 3,
+                            fontSize: 9,
+                            color: '#64748b',
+                          }}
+                        >
+                          {project
+                            ?.sanction
+                            ?.sanctionOrderNo ||
+                            'Sanction record'}
+                        </div>
+
+                      </td>
+
+
+
+                      {/* EXPENDITURE */}
+
+                      <td>
+
+                        <div
+                          style={{
+                            fontWeight: 700,
+                            fontSize: 11,
+                            color: '#0f172a',
+                          }}
+                        >
+                          {currency(
+                            actualExpenditure
+                          )}
+                        </div>
+
+
+                        <div
+                          style={{
+                            marginTop: 5,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 6,
+                          }}
+                        >
+
+                          <div
+                            style={{
+                              width: 48,
+                              height: 5,
+                              background:
+                                '#e2e8f0',
+                              borderRadius: 3,
+                              overflow: 'hidden',
+                            }}
+                          >
+
+                            <div
+                              style={{
+                                height: '100%',
+                                width: `${Math.min(
+                                  expenditurePercent,
+                                  100
+                                )}%`,
+                                background:
+                                  expenditurePercent >=
+                                  85
+                                    ? '#dc2626'
+                                    : '#64748b',
+                                borderRadius: 3,
+                              }}
+                            />
+
+                          </div>
+
+
+                          <span
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 700,
+                            }}
+                          >
+                            {Math.round(
+                              expenditurePercent
+                            )}%
+                          </span>
+
+                        </div>
+
+                      </td>
+
+
+
+                      {/* PHYSICAL PROGRESS */}
+
+                      <td>
+
+                        <div
+                          style={{
+                            minWidth: 105,
+                          }}
+                        >
+
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 7,
+                            }}
+                          >
+
+                            <div
+                              style={{
+                                flex: 1,
+                                height: 6,
+                                background:
+                                  '#e2e8f0',
+                                borderRadius: 3,
+                                overflow: 'hidden',
+                              }}
+                            >
+
+                              <div
+                                style={{
+                                  height: '100%',
+                                  width: `${Math.min(
+                                    Math.max(
+                                      physical,
+                                      0
+                                    ),
+                                    100
+                                  )}%`,
+                                  background:
+                                    physical <
+                                    40
+                                      ? '#f59e0b'
+                                      : '#16a34a',
+                                  borderRadius: 3,
+                                }}
+                              />
+
+                            </div>
+
+
+                            <span
+                              style={{
+                                fontSize: 10,
+                                fontWeight: 800,
+                                width: 28,
+                              }}
+                            >
+                              {physical}%
+                            </span>
+
+                          </div>
+
+
+                          <div
+                            style={{
+                              marginTop: 4,
+                              fontSize: 9,
+                              color: '#64748b',
+                            }}
+                          >
+                            Reported physical progress
+                          </div>
+
+                        </div>
+
+                      </td>
+
+
+
+                      {/* ASSET */}
+
+                      <td>
+
+                        <div
+                          style={{
+                            minWidth: 90,
+                          }}
+                        >
+
+                          <span
+                            className={`badge-pill asset-status-badge ${assetStatus.className}`}
+                          >
+
+                            <i />
+
+                            {assetStatus.label}
+
+                          </span>
+
+
+                          <div
+                            style={{
+                              marginTop: 5,
+                              fontSize: 9,
+                              color: '#64748b',
+                            }}
+                          >
+                            {project
+                              ?.asset
+                              ?.assetType ||
+                              'Asset'}
+                          </div>
+
+                        </div>
+
+                      </td>
+
+
+
+                      {/* RISK */}
+
+                      <td>
+
+                        <div
+                          style={{
+                            minWidth: 75,
+                          }}
+                        >
+
+                          <div
+                            style={{
+                              fontWeight: 900,
+                              fontSize: 15,
+                              color:
+                                score >= 80
+                                  ? '#b91c1c'
+                                  : score >= 50
+                                    ? '#b45309'
+                                    : '#15803d',
+                            }}
+                          >
+                            {score}
+                          </div>
+
+
+                          <span
+                            className={`badge-pill ${riskCategory}`}
+                          >
+
+                            <i />
+
+                            {riskLabel(
+                              score
+                            )}
+
+                          </span>
+
+                        </div>
+
+                      </td>
+
+
+
+                      {/* STATUS */}
+
+                      <td>
+
+                        <span
+                          className={`status-badge-clean ${statusCategory}`}
+                        >
+                          {project.status ||
+                            'Unknown'}
                         </span>
 
-                      </div>
 
-                    </td>
+                        {project?.delay && (
 
+                          <div
+                            style={{
+                              marginTop: 5,
+                              fontSize: 9,
+                              color:
+                                project.status ===
+                                'Delayed'
+                                  ? '#b91c1c'
+                                  : '#64748b',
+                              fontWeight: 700,
+                            }}
+                          >
+                            {project.delay}
+                          </div>
 
-                    <td
-                      style={{
-                        fontWeight: 600,
-                      }}
-                    >
-                      {project.expenditure}%
-                    </td>
-
-
-                    <td
-                      style={{
-                        fontWeight: 800,
-                      }}
-                    >
-                      {project.score}
-                    </td>
-
-
-                    <td>
-
-                      <span
-                        className={`badge-pill ${riskCategory}`}
-                      >
-
-                        <i />
-
-                        {riskLabel(
-                          project.score
                         )}
 
-                      </span>
-
-                    </td>
+                      </td>
 
 
-                    <td>
 
-                      <button
-                        type="button"
-                        className="secondary-btn"
-                        style={{
-                          padding: 6,
-                          borderRadius: 4,
-                        }}
-                        onClick={(e) => {
+                      {/* ACTION */}
 
-                          e.stopPropagation()
+                      <td>
 
-                          openProject(
-                            project.id
-                          )
+                        <button
+                          type="button"
+                          className="secondary-btn"
+                          style={{
+                            padding: 6,
+                            borderRadius: 4,
+                          }}
+                          onClick={(e) => {
 
-                        }}
-                        aria-label="View project"
-                      >
+                            e.stopPropagation()
 
-                        <Eye size={15} />
+                            openProject(
+                              project.id
+                            )
 
-                      </button>
+                          }}
+                          aria-label={`View ${project.name}`}
+                          title="Open project investigation"
+                        >
 
-                    </td>
+                          <Eye
+                            size={15}
+                          />
 
-                  </tr>
+                        </button>
 
-                )
+                      </td>
 
-              })}
+                    </tr>
+
+                  )
+
+                }
+              )}
 
 
-              {/* EMPTY STATE */}
+
+              {/* =================================================
+                  EMPTY STATE
+              ================================================= */}
 
               {filtered.length === 0 && (
 
@@ -881,8 +1621,10 @@ export function Projects() {
                   <td
                     colSpan={9}
                     style={{
-                      padding: '48px 20px',
-                      textAlign: 'center',
+                      padding:
+                        '48px 20px',
+                      textAlign:
+                        'center',
                     }}
                   >
 
@@ -896,6 +1638,7 @@ export function Projects() {
                       No projects found
                     </div>
 
+
                     <div
                       style={{
                         color: '#718078',
@@ -903,7 +1646,8 @@ export function Projects() {
                       }}
                     >
                       Try changing the selected
-                      state, district, risk or
+                      state, district, risk,
+                      status, work type or
                       search filters.
                     </div>
 
@@ -920,29 +1664,43 @@ export function Projects() {
         </div>
 
 
-        {/* =================================================
+
+        {/* =====================================================
             PAGINATION
-            ================================================= */}
+        ===================================================== */}
 
         <div
           className="pagination-bar"
           style={{
-            padding: '14px 20px',
+            padding:
+              '14px 20px',
           }}
         >
 
           <div>
-            Showing 1 to {filtered.length} of{' '}
-            {totalEntries} entries
+
+            Showing 1 to{' '}
+
+            {filtered.length}{' '}
+
+            of{' '}
+
+            {filtered.length}
+
+            {' '}entries
+
           </div>
 
 
-          <div className="pagination-pages">
+          <div
+            className="pagination-pages"
+          >
 
             <button
               type="button"
               className="page-num-btn"
               disabled
+              aria-label="Previous page"
             >
               &lt;
             </button>
@@ -950,11 +1708,7 @@ export function Projects() {
 
             <button
               type="button"
-              className={`page-num-btn ${
-                currentPage === 1
-                  ? 'active'
-                  : ''
-              }`}
+              className="page-num-btn active"
               onClick={() =>
                 setCurrentPage(1)
               }
@@ -963,40 +1717,12 @@ export function Projects() {
             </button>
 
 
-            <button
-              type="button"
-              className={`page-num-btn ${
-                currentPage === 2
-                  ? 'active'
-                  : ''
-              }`}
-              onClick={() =>
-                setCurrentPage(2)
-              }
-            >
-              2
-            </button>
-
-
-            <button
-              type="button"
-              className={`page-num-btn ${
-                currentPage === 3
-                  ? 'active'
-                  : ''
-              }`}
-              onClick={() =>
-                setCurrentPage(3)
-              }
-            >
-              3
-            </button>
-
-
             <span
               style={{
-                padding: '0 4px',
-                alignSelf: 'center',
+                padding:
+                  '0 4px',
+                alignSelf:
+                  'center',
               }}
             >
               ...
@@ -1006,15 +1732,8 @@ export function Projects() {
             <button
               type="button"
               className="page-num-btn"
-            >
-              156
-            </button>
-
-
-            <button
-              type="button"
-              className="page-num-btn"
               disabled
+              aria-label="Next page"
             >
               &gt;
             </button>
@@ -1026,37 +1745,34 @@ export function Projects() {
       </div>
 
     </div>
+
   )
 }
 
 
+
 /* =========================================================
-   SMALL INTERNAL ICON
-   Avoids adding another dependency/import.
-   ========================================================= */
+   SMALL INTERNAL MAP PIN ICON
+
+   Kept as an internal component so no additional dependency
+   is required.
+========================================================= */
 
 function MapPinSmall() {
+
   return (
-    <span className="projects-location-icon">
-      <svg
-        width="15"
-        height="15"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" />
-        <circle
-          cx="12"
-          cy="10"
-          r="3"
-        />
-      </svg>
+
+    <span
+      className="projects-location-icon"
+      aria-hidden="true"
+    >
+
+      <MapPin size={15} />
+
     </span>
+
   )
+
 }
 
 
