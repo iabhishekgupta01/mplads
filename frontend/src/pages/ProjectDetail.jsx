@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import "../styles/projectDetails.css"
 import DuplicateWorkPanel from '../components/projects/DuplicateWorkPanel.jsx'
 import ActionAlertCenter from '../components/projects/ActionAlertCenter.jsx'
+import DocumentEvidenceCenter from '../components/projects/DocumentEvidenceCenter.jsx'
 import "../styles/duplicateWork.css";
 import {
   AlertTriangle,
@@ -1472,6 +1473,7 @@ export function ProjectDetail() {
           'Asset Verification',
           'Alerts',
           'Documents',
+          'Audit Trail',
         ].map((tab) => (
 
           <button
@@ -3753,6 +3755,35 @@ export function ProjectDetail() {
 
 
       {/* =====================================================
+          GAP 8 — DOCUMENTS & EVIDENCE MANAGEMENT
+      ===================================================== */}
+
+      {activeTab === 'Documents' && (
+        <DocumentEvidenceCenter
+          project={project}
+          onReviewEvidence={() => setActiveTab('Evidence & Investigation')}
+          onRequestAudit={() => setModal('audit')}
+        />
+      )}
+
+
+      {/* =====================================================
+          GAP 9 — AUDIT TRAIL & DECISION ACCOUNTABILITY
+      ===================================================== */}
+
+      {activeTab === 'Audit Trail' && (
+        <AuditTrailCenter
+          project={project}
+          risk={risk}
+          payments={projectPayments}
+          inspections={projectInspections}
+          progress={projectProgress}
+          onRequestAudit={() => setModal('audit')}
+        />
+      )}
+
+
+      {/* =====================================================
           OTHER TABS
       ===================================================== */}
 
@@ -3761,7 +3792,9 @@ export function ProjectDetail() {
         activeTab !== 'Evidence & Investigation' &&
         activeTab !== 'Duplicate Work' &&
         activeTab !== 'Payments' &&
-        activeTab !== 'Asset Verification' && (
+        activeTab !== 'Asset Verification' &&
+        activeTab !== 'Documents' &&
+         activeTab !== 'Audit Trail' && (
 
         <div
           className="panel"
