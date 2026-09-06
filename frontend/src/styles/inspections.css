@@ -1,0 +1,64 @@
+/* FIELD INSPECTIONS & PHOTO UPLOAD / GPS CAPTURE STYLES */
+
+.photo-upload-zone {
+  border: 2px dashed #b9d8c4;
+  border-radius: 10px;
+  padding: 26px;
+  text-align: center;
+  background: #f7fbf8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.photo-upload-zone:hover {
+  border-color: var(--sl-green);
+  background: var(--sl-mint);
+}
+
+.photo-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.photo-preview-card {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  height: 110px;
+  box-shadow: var(--shadow-sm);
+}
+
+.photo-preview-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(23, 43, 54, 0.85);
+  color: #ffffff;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gps-location-card {
+  background: #eef8f2;
+  border: 1px solid #b9d8c4;
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+}

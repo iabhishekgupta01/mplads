@@ -1,1 +1,1 @@
-export { AnalyticsCenter as default, AnalyticsCenter } from '../App.jsx'
+export { AnalyticsCenter as default, AnalyticsCenter } from './AnalyticsCenter.jsx'

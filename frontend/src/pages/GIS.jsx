@@ -1,1 +1,1 @@
-export { GisPage as default, GisPage } from '../App.jsx'
+export { GisPage as default, GisPage } from './GisPage.jsx'

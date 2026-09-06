@@ -1,1 +1,1 @@
-export { SecondaryPage as default, SecondaryPage } from '../App.jsx'
+export { SecondaryPage as default, SecondaryPage } from './SecondaryPage.jsx'

@@ -1,1 +1,3 @@
-export { FieldDashboard as default, FieldDashboard, Inspections, InspectionDetail } from '../App.jsx'
+export { FieldDashboard as default, FieldDashboard } from './FieldDashboard.jsx'
+export { Inspections } from './Inspections.jsx'
+export { InspectionDetail } from './InspectionDetail.jsx'

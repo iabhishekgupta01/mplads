@@ -1,0 +1,232 @@
+/* DASHBOARD SPECIFIC STYLES */
+
+.kpi-5-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.kpi-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f7fbf8 100%);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  border-color: #a3d9b5;
+  box-shadow: var(--shadow-glow);
+}
+
+.kpi-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kpi-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: 'DM Mono', monospace;
+}
+
+.kpi-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sl-mint);
+  color: var(--sl-green);
+}
+
+.kpi-icon-box.blue { background: #e9f2fb; color: #3b82f6; }
+.kpi-icon-box.green { background: #eef8f2; color: #10834b; }
+.kpi-icon-box.teal { background: #f0fdfa; color: #0d9488; }
+.kpi-icon-box.amber { background: #fff8eb; color: #c8902f; }
+.kpi-icon-box.red { background: #fff0eb; color: #c62828; }
+
+.kpi-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 10px 0 4px;
+  letter-spacing: -0.04em;
+}
+
+.kpi-meta {
+  font-size: 11px;
+  color: var(--sl-green);
+  font-weight: 700;
+}
+
+.kpi-meta.amber { color: var(--sl-gold); }
+.kpi-meta.red { color: var(--sl-red); }
+
+.dashboard-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.chart-container-center {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.donut-center-text {
+  position: absolute;
+  text-align: center;
+  pointer-events: none;
+}
+
+.donut-center-text strong {
+  display: block;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.donut-center-text span {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.chart-legend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.legend-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.legend-val {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.fund-summary-box {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.fund-circle-wrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: conic-gradient(#10834b 0% 83.6%, #e2ede6 83.6% 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.fund-circle-inner {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.fund-circle-inner strong {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.fund-circle-inner span {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.fund-metrics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.fund-metric-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.fund-metric-row span {
+  color: var(--text-muted);
+}
+
+.fund-metric-row strong {
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.recent-alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.alert-item-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+}
+
+.alert-bullet-icon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex: 0 0 auto;
+}
+
+.alert-bullet-icon.red { background: var(--sl-red); }
+.alert-bullet-icon.amber { background: var(--sl-gold); }

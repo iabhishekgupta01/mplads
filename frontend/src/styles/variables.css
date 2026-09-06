@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --sl-green: #10834b;
+  --sl-mint: #eef8f2;
+  --sl-navy: #172b36;
+  --sl-bg: #f7faf8;
+  --sl-text: #111827;
+  --sl-muted: #667085;
+  --sl-border: #e4e7ec;
+  --sl-gold: #c8902f;
+  --sl-red: #c62828;
+  
+  --navy: #172b36;
+  --navy-hover: #203a48;
+  --navy-active: #10834b;
+  --bg-app: #f4f8f5;
+  --bg-card: #ffffff;
+  --border-color: #e2ede6;
+  --border-subtle: #edf4ef;
+  --text-main: #172b36;
+  --text-muted: #53665f;
+  --text-subtle: #899c93;
+  --primary-blue: #10834b;
+  --primary-blue-hover: #096b3b;
+  --green: #10834b;
+  --green-bg: #eef8f2;
+  --amber: #c8902f;
+  --amber-bg: #fff8eb;
+  --red: #c62828;
+  --red-bg: #fff0eb;
+  --shadow-sm: 0 3px 12px rgba(23, 43, 54, 0.04);
+  --shadow-md: 0 8px 25px rgba(23, 43, 54, 0.08);
+  --shadow-glow: 0 10px 30px rgba(16, 131, 75, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Manrope, 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: 13px;
+}
+
+button {
+  cursor: pointer;
+}

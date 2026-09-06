@@ -1,6 +1,82 @@
-import { ShieldCheck, X } from 'lucide-react'
-import { navItems } from '../../constants/navigation.js'
+import { Landmark, X } from 'lucide-react'
+import { bottomNavItems, navItems } from '../../constants/navigation.js'
+import { useApp } from '../../context/AppContext.jsx'
 
-export function Sidebar({ view, navigate, mobileNav, setMobileNav }) {
-  return <aside className={`sidebar ${mobileNav ? 'open' : ''}`}><div className="sidebar-brand"><div className="brand-mark">M</div><div><strong>MPLADS AI</strong><span>Monitoring System</span></div><button className="icon-button close-nav" onClick={() => setMobileNav(false)} aria-label="Close navigation"><X size={19} /></button></div><div className="sidebar-rule" /><div className="scope"><span>ACTIVE SCOPE</span><strong>Madhya Pradesh</strong><small>FY 2025–26</small></div><nav>{navItems.map(({ label, icon: Icon, view: itemView, badge }) => <button key={itemView} className={`nav-item ${view === itemView ? 'active' : ''}`} onClick={() => navigate(itemView)}><Icon size={18} /><span>{label}</span>{badge && <b>{badge}</b>}</button>)}</nav><div className="sidebar-footer"><div className="footer-line"><ShieldCheck size={16} /><span>Prototype environment</span></div><p>Transparent development,<br />stronger India.</p><small>v0.1 · SIH 26102</small></div></aside>
+export function Sidebar(props) {
+  const context = useApp()
+  const view = props.view || context.view
+  const navigate = props.navigate || context.navigate
+  const mobileNav = props.mobileNav !== undefined ? props.mobileNav : context.mobileNav
+  const setMobileNav = props.setMobileNav || context.setMobileNav
+  const setLoggedIn = context.setLoggedIn
+  const setEntry = context.setEntry
+
+  const handleNavClick = (itemView) => {
+    if (itemView === 'logout') {
+      setLoggedIn(false)
+      setEntry('landing')
+      window.history.pushState({}, '', '/')
+      setMobileNav(false)
+      return
+    }
+    navigate(itemView)
+    setMobileNav(false)
+  }
+
+  return (
+    <aside className={`sidebar ${mobileNav ? 'open' : ''}`}>
+      <div className="sidebar-header">
+        <div className="sidebar-brand-box">
+          <div className="brand-emblem-icon">
+            <Landmark size={20} />
+          </div>
+          <div>
+            <strong className="brand-title">MoSPI — DIID</strong>
+            <span className="brand-subtitle">MPLADS AI Monitor</span>
+          </div>
+        </div>
+        <button className="icon-button close-nav" onClick={() => setMobileNav(false)} aria-label="Close navigation">
+          <X size={18} />
+        </button>
+      </div>
+
+      <nav className="sidebar-nav">
+        {navItems.map(({ label, icon: Icon, view: itemView }) => {
+          const isActive = view === itemView || (itemView === 'projects' && (view === 'detail' || view === 'progress' || view === 'verification'))
+          return (
+            <button
+              key={itemView}
+              className={`nav-item ${isActive ? 'active' : ''}`}
+              onClick={() => handleNavClick(itemView)}
+            >
+              <Icon size={18} />
+              <span>{label}</span>
+            </button>
+          )
+        })}
+
+        <div className="nav-divider" />
+
+        {bottomNavItems.map(({ label, icon: Icon, view: itemView }) => (
+          <button
+            key={itemView}
+            className={`nav-item ${view === itemView ? 'active' : ''}`}
+            onClick={() => handleNavClick(itemView)}
+          >
+            <Icon size={18} />
+            <span>{label}</span>
+          </button>
+        ))}
+      </nav>
+
+      <div className="sidebar-scope-footer">
+        <div className="scope-badge">
+          <span>ACTIVE JURISDICTION</span>
+          <strong>All States & UTs (National)</strong>
+        </div>
+      </div>
+    </aside>
+  )
 }
+
+export default Sidebar

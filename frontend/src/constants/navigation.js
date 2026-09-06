@@ -1,18 +1,32 @@
-import { AlertTriangle, BarChart3, ClipboardCheck, FileText, IndianRupee, LayoutDashboard, Map, ShieldCheck, SlidersHorizontal, Users } from 'lucide-react'
+import {
+  AlertTriangle,
+  BarChart3,
+  CheckSquare,
+  CreditCard,
+  FileText,
+  FolderKanban,
+  LayoutDashboard,
+  LogOut,
+  MapPin,
+  Settings,
+  ShieldCheck,
+  Wallet,
+} from 'lucide-react'
 
 export const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard, view: 'dashboard' },
-  { label: 'Project Monitoring', icon: ClipboardCheck, view: 'projects' },
-  { label: 'Risk & Alerts', icon: AlertTriangle, view: 'alerts', badge: '12' },
+  { label: 'Projects', icon: FolderKanban, view: 'projects' },
+  { label: 'Risk & Alerts', icon: AlertTriangle, view: 'alerts' },
+  { label: 'Fund Monitoring', icon: Wallet, view: 'funds' },
   { label: 'Analytics', icon: BarChart3, view: 'analytics' },
-  { label: 'Field Operations', icon: ClipboardCheck, view: 'field-dashboard' },
-  { label: 'Inspections', icon: ShieldCheck, view: 'inspections' },
-  { label: 'Payments', icon: IndianRupee, view: 'payments' },
-  { label: 'Vendors', icon: Users, view: 'vendors' },
-  { label: 'GIS Map', icon: Map, view: 'map' },
-  { label: 'Fund Utilization', icon: IndianRupee, view: 'funds' },
+  { label: 'Field Inspections', icon: CheckSquare, view: 'inspections' },
+  { label: 'Payments', icon: CreditCard, view: 'payments' },
+  { label: 'GIS Map', icon: MapPin, view: 'map' },
   { label: 'Reports', icon: FileText, view: 'reports' },
   { label: 'Compliance', icon: ShieldCheck, view: 'compliance' },
-  { label: 'User Management', icon: Users, view: 'users' },
-  { label: 'Settings', icon: SlidersHorizontal, view: 'settings' },
+]
+
+export const bottomNavItems = [
+  { label: 'Settings', icon: Settings, view: 'settings' },
+  { label: 'Logout', icon: LogOut, view: 'logout' },
 ]
