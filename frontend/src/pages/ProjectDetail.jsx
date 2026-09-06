@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
-
+import "../styles/projectDetails.css"
 import DuplicateWorkPanel from '../components/projects/DuplicateWorkPanel.jsx'
+import ActionAlertCenter from '../components/projects/ActionAlertCenter.jsx'
 import "../styles/duplicateWork.css";
-import "../styles/ProjectDetails.css";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -362,14 +362,95 @@ export function ProjectDetail() {
   const projectedCostVariance =
     revisedEstimate > 0
       ? (
-        (
-          projectedFinalCost -
+          (
+            projectedFinalCost -
+            revisedEstimate
+          ) /
           revisedEstimate
-        ) /
-        revisedEstimate
-      ) * 100
+        ) * 100
       : 0
 
+
+  /* =========================================================
+     GAP 6 — ASSET / GROUND VERIFICATION
+  ========================================================= */
+
+  const latestInspection = useMemo(() => {
+    if (!projectInspections.length) return null
+
+    return [...projectInspections].sort((a, b) =>
+      String(b?.date || b?.inspectionDate || b?.scheduledDate || '').localeCompare(
+        String(a?.date || a?.inspectionDate || a?.scheduledDate || '')
+      )
+    )[0]
+  }, [projectInspections])
+
+  const reportedCompletion = Number(
+    project?.asset?.reportedCompletion ??
+    project?.physical ??
+    0
+  )
+
+  const fieldObservedCompletion = Number(
+    latestInspection?.observedCompletion ??
+    latestInspection?.observedProgress ??
+    latestInspection?.physicalProgress ??
+    project?.asset?.verifiedCompletion ??
+    0
+  )
+
+  const verificationGap = Math.max(
+    0,
+    reportedCompletion - fieldObservedCompletion
+  )
+
+  const assetVerificationStatus =
+    project?.asset?.verificationStatus === 'Verified'
+      ? 'Verified'
+      : latestInspection
+        ? verificationGap >= 15
+          ? 'Physical Progress Mismatch'
+          : 'Field Verification Available'
+        : 'Pending Verification'
+
+  const assetVerificationClass =
+    assetVerificationStatus === 'Verified'
+      ? 'verified'
+      : assetVerificationStatus === 'Physical Progress Mismatch'
+        ? 'mismatch'
+        : 'pending'
+
+  const assetEvidenceItems = [
+    {
+      label: 'Field inspection',
+      available: Boolean(latestInspection),
+      detail: latestInspection
+        ? 'Latest inspection record is linked to this project.'
+        : 'No field inspection record is linked yet.',
+    },
+    {
+      label: 'Geo-location',
+      available: Boolean(project?.location?.latitude && project?.location?.longitude),
+      detail: project?.location?.geoVerified
+        ? 'Project coordinates are available and geo-verified.'
+        : 'Project coordinates are available for verification.',
+    },
+    {
+      label: 'Progress history',
+      available: projectProgress.length > 0,
+      detail: `${projectProgress.length} progress report(s) linked to this project.`,
+    },
+    {
+      label: 'Project photographs',
+      available: Boolean(
+        project?.documents?.photographs ||
+        project?.documents?.projectPhotographs ||
+        latestInspection?.photos ||
+        latestInspection?.photographs
+      ),
+      detail: 'Photographic evidence can be attached to the field verification record.',
+    },
+  ]
 
   /* =========================================================
      RISK SIGNALS
@@ -582,7 +663,7 @@ export function ProjectDetail() {
         const diffDays =
           Math.abs(
             payment.parsedDate -
-            previous.parsedDate
+              previous.parsedDate
           ) /
           (1000 * 60 * 60 * 24)
 
@@ -1388,16 +1469,18 @@ export function ProjectDetail() {
           'Payments',
           'Risk Analysis',
           'Duplicate Work',
+          'Asset Verification',
           'Alerts',
           'Documents',
         ].map((tab) => (
 
           <button
             key={tab}
-            className={`tab-btn ${activeTab === tab
+            className={`tab-btn ${
+              activeTab === tab
                 ? 'active'
                 : ''
-              }`}
+            }`}
             onClick={() =>
               setActiveTab(tab)
             }
@@ -1575,10 +1658,11 @@ export function ProjectDetail() {
                     return (
 
                       <div
-                        className={`evidence-item ai-evidence-item ${expanded
+                        className={`evidence-item ai-evidence-item ${
+                          expanded
                             ? 'expanded'
                             : ''
-                          }`}
+                        }`}
                         key={signal.id}
                       >
 
@@ -2029,60 +2113,440 @@ export function ProjectDetail() {
       {activeTab ===
         'Evidence & Investigation' && (
 
-          <div className="investigation-page">
+        <div className="investigation-page">
 
 
-            {/* =================================================
+          {/* =================================================
               CASE HEADER
           ================================================= */}
 
-            <div className="investigation-case-header">
+          <div className="investigation-case-header">
+
+            <div>
+
+              <span className="section-eyebrow">
+                ANOMALY INVESTIGATION
+              </span>
+
+              <h2>
+                Evidence supporting this risk case
+              </h2>
+
+              <p>
+                Independent project records are
+                correlated to help an officer understand
+                why the system raised this case.
+              </p>
+
+            </div>
+
+
+            <div className="evidence-strength-box">
+
+              <span>
+                Evidence Strength
+              </span>
+
+              <strong>
+                {evidenceStrength}%
+              </strong>
+
+              <small>
+                {availableEvidence.length}
+                {' '}of{' '}
+                {evidenceSources.length}
+                {' '}sources available
+              </small>
+
+            </div>
+
+          </div>
+
+
+
+          {/* =================================================
+              EVIDENCE SOURCE GRID
+          ================================================= */}
+
+          <div className="investigation-section">
+
+            <div className="investigation-section-heading">
 
               <div>
 
                 <span className="section-eyebrow">
-                  ANOMALY INVESTIGATION
+                  01 · DATA SOURCES
                 </span>
 
-                <h2>
-                  Evidence supporting this risk case
-                </h2>
-
-                <p>
-                  Independent project records are
-                  correlated to help an officer understand
-                  why the system raised this case.
-                </p>
-
-              </div>
-
-
-              <div className="evidence-strength-box">
-
-                <span>
-                  Evidence Strength
-                </span>
-
-                <strong>
-                  {evidenceStrength}%
-                </strong>
-
-                <small>
-                  {availableEvidence.length}
-                  {' '}of{' '}
-                  {evidenceSources.length}
-                  {' '}sources available
-                </small>
+                <h3>
+                  Evidence available to the investigator
+                </h3>
 
               </div>
 
             </div>
 
 
+            <div className="evidence-source-grid">
 
-            {/* =================================================
-              EVIDENCE SOURCE GRID
+              {evidenceSources.map(
+                (source) => (
+
+                  <div
+                    key={source.id}
+                    className={`evidence-source-card ${
+                      source.available
+                        ? 'available'
+                        : 'unavailable'
+                    }`}
+                  >
+
+                    <div className="evidence-source-icon">
+
+                      {source.icon}
+
+                    </div>
+
+
+                    <div>
+
+                      <strong>
+                        {source.label}
+                      </strong>
+
+                      <p>
+                        {source.detail}
+                      </p>
+
+                    </div>
+
+
+                    <span className="evidence-source-status">
+
+                      {source.available
+                        ? 'Available'
+                        : 'Missing'}
+
+                    </span>
+
+                  </div>
+
+                )
+              )}
+
+            </div>
+
+          </div>
+
+
+
+          {/* =================================================
+              EVIDENCE CHAIN
           ================================================= */}
+
+          <div className="investigation-section">
+
+            <div className="investigation-section-heading">
+
+              <div>
+
+                <span className="section-eyebrow">
+                  02 · EVIDENCE CHAIN
+                </span>
+
+                <h3>
+                  How the system reached this case
+                </h3>
+
+              </div>
+
+            </div>
+
+
+            <div className="evidence-chain">
+
+              <EvidenceChainStep
+                number="01"
+                icon={<FileCheck2 size={16} />}
+                title="Project sanctioned"
+                detail={`${formatCurrency(
+                  sanctionedAmount
+                )} sanctioned for ${project.category || 'MPLADS work'}.`}
+                status="Source available"
+              />
+
+
+              <EvidenceChainStep
+                number="02"
+                icon={<CreditCard size={16} />}
+                title="Financial execution"
+                detail={`${expenditurePercent}% expenditure reported against ${physicalPercent}% physical progress.`}
+                status={
+                  progressGap >= 25
+                    ? 'Mismatch detected'
+                    : 'Within review range'
+                }
+                warning={
+                  progressGap >= 25
+                }
+              />
+
+
+              <EvidenceChainStep
+                number="03"
+                icon={<CircleAlert size={16} />}
+                title="Payment pattern"
+                detail={
+                  flaggedPayments.length > 0
+                    ? `${flaggedPayments.length} payment(s) are currently flagged for review.`
+                    : `${projectPayments.length} payment records available.`
+                }
+                status={
+                  flaggedPayments.length > 0
+                    ? 'Anomaly detected'
+                    : 'No flagged payment'
+                }
+                warning={
+                  flaggedPayments.length > 0
+                }
+              />
+
+
+              <EvidenceChainStep
+                number="04"
+                icon={<Clock3 size={16} />}
+                title="Execution timeline"
+                detail={
+                  project.timeline?.delayMonths
+                    ? `${project.timeline.delayMonths} month(s) behind expected completion.`
+                    : 'Project currently within expected schedule.'
+                }
+                status={
+                  project.timeline?.delayMonths > 0
+                    ? 'Schedule risk'
+                    : 'On track'
+                }
+                warning={
+                  project.timeline?.delayMonths > 0
+                }
+              />
+
+
+              <EvidenceChainStep
+                number="05"
+                icon={<MapPin size={16} />}
+                title="Ground verification"
+                detail={
+                  project.asset?.verificationStatus ||
+                  'Field verification pending.'
+                }
+                status={
+                  project.asset?.verificationStatus ===
+                  'Verified'
+                    ? 'Verified'
+                    : 'Verification required'
+                }
+                warning={
+                  project.asset?.verificationStatus !==
+                  'Verified'
+                }
+              />
+
+            </div>
+
+          </div>
+
+
+
+          {/* =================================================
+              PAYMENT EVIDENCE
+          ================================================= */}
+
+          <div className="investigation-section">
+
+            <div className="investigation-section-heading">
+
+              <div>
+
+                <span className="section-eyebrow">
+                  03 · PAYMENT EVIDENCE
+                </span>
+
+                <h3>
+                  Transactions linked to this project
+                </h3>
+
+              </div>
+
+
+              <span className="investigation-count">
+                {projectPayments.length}
+                {' '}records
+              </span>
+
+            </div>
+
+
+            <div className="investigation-table-wrap">
+
+              <table className="investigation-table">
+
+                <thead>
+
+                  <tr>
+
+                    <th>
+                      Transaction
+                    </th>
+
+                    <th>
+                      Date
+                    </th>
+
+                    <th>
+                      Amount
+                    </th>
+
+                    <th>
+                      Type
+                    </th>
+
+                    <th>
+                      Status
+                    </th>
+
+                    <th>
+                      AI Finding
+                    </th>
+
+                  </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                  {projectPayments.length === 0 ? (
+
+                    <tr>
+
+                      <td
+                        colSpan={6}
+                        className="investigation-empty"
+                      >
+                        No payment records linked
+                        to this project.
+                      </td>
+
+                    </tr>
+
+                  ) : (
+
+                    projectPayments.map(
+                      (payment) => (
+
+                        <tr
+                          key={
+                            payment.id
+                          }
+                        >
+
+                          <td>
+                            <strong>
+                              {payment.id}
+                            </strong>
+                          </td>
+
+                          <td>
+                            {payment.date ||
+                              '—'}
+                          </td>
+
+                          <td>
+                            <strong>
+                              {formatCurrency(
+                                payment.amount
+                              )}
+                            </strong>
+                          </td>
+
+                          <td>
+                            {payment.type ||
+                              '—'}
+                          </td>
+
+                          <td>
+
+                            <span
+                              className={`investigation-status ${
+                                payment.flagged
+                                  ? 'warning'
+                                  : 'normal'
+                              }`}
+                            >
+                              {payment.status ||
+                                'Processed'}
+                            </span>
+
+                          </td>
+
+                          <td>
+
+                            {payment.flagged ? (
+
+                              <div className="finding-inline">
+
+                                <AlertTriangle
+                                  size={13}
+                                />
+
+                                <span>
+                                  {payment.reason ||
+                                    'Payment pattern requires review.'}
+                                </span>
+
+                              </div>
+
+                            ) : (
+
+                              <span
+                                style={{
+                                  color:
+                                    '#64748b',
+                                  fontSize:
+                                    11,
+                                }}
+                              >
+                                No immediate concern
+                              </span>
+
+                            )}
+
+                          </td>
+
+                        </tr>
+
+                      )
+                    )
+
+                  )}
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </div>
+
+
+
+          {/* =================================================
+              VENDOR CONNECTION
+          ================================================= */}
+
+          <div className="investigation-two-column">
+
 
             <div className="investigation-section">
 
@@ -2091,11 +2555,11 @@ export function ProjectDetail() {
                 <div>
 
                   <span className="section-eyebrow">
-                    01 · DATA SOURCES
+                    04 · ENTITY CONNECTION
                   </span>
 
                   <h3>
-                    Evidence available to the investigator
+                    Vendor linked to project
                   </h3>
 
                 </div>
@@ -2103,51 +2567,81 @@ export function ProjectDetail() {
               </div>
 
 
-              <div className="evidence-source-grid">
+              <div className="linked-entity-card">
 
-                {evidenceSources.map(
-                  (source) => (
+                <div className="linked-entity-icon">
 
-                    <div
-                      key={source.id}
-                      className={`evidence-source-card ${source.available
-                          ? 'available'
-                          : 'unavailable'
-                        }`}
-                    >
+                  <Building2 size={18} />
 
-                      <div className="evidence-source-icon">
+                </div>
 
-                        {source.icon}
+
+                <div className="linked-entity-content">
+
+                  <strong>
+                    {relatedVendor?.name ||
+                      project.vendor ||
+                      'Vendor not available'}
+                  </strong>
+
+                  <span>
+                    {project.agency ||
+                      project.implementingAgency?.name ||
+                      'Implementing agency unavailable'}
+                  </span>
+
+
+                  {relatedVendor && (
+
+                    <div className="linked-entity-metrics">
+
+                      <div>
+
+                        <span>
+                          Vendor Risk
+                        </span>
+
+                        <strong>
+                          {relatedVendor.risk ??
+                            '—'}
+                          /100
+                        </strong>
 
                       </div>
 
 
                       <div>
 
-                        <strong>
-                          {source.label}
-                        </strong>
+                        <span>
+                          Projects
+                        </span>
 
-                        <p>
-                          {source.detail}
-                        </p>
+                        <strong>
+                          {relatedVendor.projects ??
+                            '—'}
+                        </strong>
 
                       </div>
 
 
-                      <span className="evidence-source-status">
+                      <div>
 
-                        {source.available
-                          ? 'Available'
-                          : 'Missing'}
+                        <span>
+                          Flagged
+                        </span>
 
-                      </span>
+                        <strong>
+                          {relatedVendor.flagged ??
+                            0}
+                        </strong>
+
+                      </div>
 
                     </div>
 
-                  )
-                )}
+                  )}
+
+                </div>
 
               </div>
 
@@ -2155,565 +2649,158 @@ export function ProjectDetail() {
 
 
 
-            {/* =================================================
-              EVIDENCE CHAIN
-          ================================================= */}
-
-            <div className="investigation-section">
-
-              <div className="investigation-section-heading">
-
-                <div>
-
-                  <span className="section-eyebrow">
-                    02 · EVIDENCE CHAIN
-                  </span>
-
-                  <h3>
-                    How the system reached this case
-                  </h3>
-
-                </div>
-
-              </div>
-
-
-              <div className="evidence-chain">
-
-                <EvidenceChainStep
-                  number="01"
-                  icon={<FileCheck2 size={16} />}
-                  title="Project sanctioned"
-                  detail={`${formatCurrency(
-                    sanctionedAmount
-                  )} sanctioned for ${project.category || 'MPLADS work'}.`}
-                  status="Source available"
-                />
-
-
-                <EvidenceChainStep
-                  number="02"
-                  icon={<CreditCard size={16} />}
-                  title="Financial execution"
-                  detail={`${expenditurePercent}% expenditure reported against ${physicalPercent}% physical progress.`}
-                  status={
-                    progressGap >= 25
-                      ? 'Mismatch detected'
-                      : 'Within review range'
-                  }
-                  warning={
-                    progressGap >= 25
-                  }
-                />
-
-
-                <EvidenceChainStep
-                  number="03"
-                  icon={<CircleAlert size={16} />}
-                  title="Payment pattern"
-                  detail={
-                    flaggedPayments.length > 0
-                      ? `${flaggedPayments.length} payment(s) are currently flagged for review.`
-                      : `${projectPayments.length} payment records available.`
-                  }
-                  status={
-                    flaggedPayments.length > 0
-                      ? 'Anomaly detected'
-                      : 'No flagged payment'
-                  }
-                  warning={
-                    flaggedPayments.length > 0
-                  }
-                />
-
-
-                <EvidenceChainStep
-                  number="04"
-                  icon={<Clock3 size={16} />}
-                  title="Execution timeline"
-                  detail={
-                    project.timeline?.delayMonths
-                      ? `${project.timeline.delayMonths} month(s) behind expected completion.`
-                      : 'Project currently within expected schedule.'
-                  }
-                  status={
-                    project.timeline?.delayMonths > 0
-                      ? 'Schedule risk'
-                      : 'On track'
-                  }
-                  warning={
-                    project.timeline?.delayMonths > 0
-                  }
-                />
-
-
-                <EvidenceChainStep
-                  number="05"
-                  icon={<MapPin size={16} />}
-                  title="Ground verification"
-                  detail={
-                    project.asset?.verificationStatus ||
-                    'Field verification pending.'
-                  }
-                  status={
-                    project.asset?.verificationStatus ===
-                      'Verified'
-                      ? 'Verified'
-                      : 'Verification required'
-                  }
-                  warning={
-                    project.asset?.verificationStatus !==
-                    'Verified'
-                  }
-                />
-
-              </div>
-
-            </div>
-
-
-
-            {/* =================================================
-              PAYMENT EVIDENCE
-          ================================================= */}
-
-            <div className="investigation-section">
-
-              <div className="investigation-section-heading">
-
-                <div>
-
-                  <span className="section-eyebrow">
-                    03 · PAYMENT EVIDENCE
-                  </span>
-
-                  <h3>
-                    Transactions linked to this project
-                  </h3>
-
-                </div>
-
-
-                <span className="investigation-count">
-                  {projectPayments.length}
-                  {' '}records
-                </span>
-
-              </div>
-
-
-              <div className="investigation-table-wrap">
-
-                <table className="investigation-table">
-
-                  <thead>
-
-                    <tr>
-
-                      <th>
-                        Transaction
-                      </th>
-
-                      <th>
-                        Date
-                      </th>
-
-                      <th>
-                        Amount
-                      </th>
-
-                      <th>
-                        Type
-                      </th>
-
-                      <th>
-                        Status
-                      </th>
-
-                      <th>
-                        AI Finding
-                      </th>
-
-                    </tr>
-
-                  </thead>
-
-
-                  <tbody>
-
-                    {projectPayments.length === 0 ? (
-
-                      <tr>
-
-                        <td
-                          colSpan={6}
-                          className="investigation-empty"
-                        >
-                          No payment records linked
-                          to this project.
-                        </td>
-
-                      </tr>
-
-                    ) : (
-
-                      projectPayments.map(
-                        (payment) => (
-
-                          <tr
-                            key={
-                              payment.id
-                            }
-                          >
-
-                            <td>
-                              <strong>
-                                {payment.id}
-                              </strong>
-                            </td>
-
-                            <td>
-                              {payment.date ||
-                                '—'}
-                            </td>
-
-                            <td>
-                              <strong>
-                                {formatCurrency(
-                                  payment.amount
-                                )}
-                              </strong>
-                            </td>
-
-                            <td>
-                              {payment.type ||
-                                '—'}
-                            </td>
-
-                            <td>
-
-                              <span
-                                className={`investigation-status ${payment.flagged
-                                    ? 'warning'
-                                    : 'normal'
-                                  }`}
-                              >
-                                {payment.status ||
-                                  'Processed'}
-                              </span>
-
-                            </td>
-
-                            <td>
-
-                              {payment.flagged ? (
-
-                                <div className="finding-inline">
-
-                                  <AlertTriangle
-                                    size={13}
-                                  />
-
-                                  <span>
-                                    {payment.reason ||
-                                      'Payment pattern requires review.'}
-                                  </span>
-
-                                </div>
-
-                              ) : (
-
-                                <span
-                                  style={{
-                                    color:
-                                      '#64748b',
-                                    fontSize:
-                                      11,
-                                  }}
-                                >
-                                  No immediate concern
-                                </span>
-
-                              )}
-
-                            </td>
-
-                          </tr>
-
-                        )
-                      )
-
-                    )}
-
-                  </tbody>
-
-                </table>
-
-              </div>
-
-            </div>
-
-
-
-            {/* =================================================
-              VENDOR CONNECTION
-          ================================================= */}
-
-            <div className="investigation-two-column">
-
-
-              <div className="investigation-section">
-
-                <div className="investigation-section-heading">
-
-                  <div>
-
-                    <span className="section-eyebrow">
-                      04 · ENTITY CONNECTION
-                    </span>
-
-                    <h3>
-                      Vendor linked to project
-                    </h3>
-
-                  </div>
-
-                </div>
-
-
-                <div className="linked-entity-card">
-
-                  <div className="linked-entity-icon">
-
-                    <Building2 size={18} />
-
-                  </div>
-
-
-                  <div className="linked-entity-content">
-
-                    <strong>
-                      {relatedVendor?.name ||
-                        project.vendor ||
-                        'Vendor not available'}
-                    </strong>
-
-                    <span>
-                      {project.agency ||
-                        project.implementingAgency?.name ||
-                        'Implementing agency unavailable'}
-                    </span>
-
-
-                    {relatedVendor && (
-
-                      <div className="linked-entity-metrics">
-
-                        <div>
-
-                          <span>
-                            Vendor Risk
-                          </span>
-
-                          <strong>
-                            {relatedVendor.risk ??
-                              '—'}
-                            /100
-                          </strong>
-
-                        </div>
-
-
-                        <div>
-
-                          <span>
-                            Projects
-                          </span>
-
-                          <strong>
-                            {relatedVendor.projects ??
-                              '—'}
-                          </strong>
-
-                        </div>
-
-
-                        <div>
-
-                          <span>
-                            Flagged
-                          </span>
-
-                          <strong>
-                            {relatedVendor.flagged ??
-                              0}
-                          </strong>
-
-                        </div>
-
-                      </div>
-
-                    )}
-
-                  </div>
-
-                </div>
-
-              </div>
-
-
-
-              {/* ===============================================
+            {/* ===============================================
                 ASSET VERIFICATION
             =============================================== */}
 
-              <div className="investigation-section">
+            <div className="investigation-section">
 
-                <div className="investigation-section-heading">
+              <div className="investigation-section-heading">
+
+                <div>
+
+                  <span className="section-eyebrow">
+                    05 · ASSET VERIFICATION
+                  </span>
+
+                  <h3>
+                    Ground truth status
+                  </h3>
+
+                </div>
+
+              </div>
+
+
+              <div className="asset-investigation-card">
+
+                <div className="asset-investigation-header">
 
                   <div>
 
-                    <span className="section-eyebrow">
-                      05 · ASSET VERIFICATION
-                    </span>
+                    <strong>
+                      {project.asset?.assetName ||
+                        project.asset?.assetType ||
+                        'Asset'}
+                    </strong>
 
-                    <h3>
-                      Ground truth status
-                    </h3>
-
-                  </div>
-
-                </div>
-
-
-                <div className="asset-investigation-card">
-
-                  <div className="asset-investigation-header">
-
-                    <div>
-
-                      <strong>
-                        {project.asset?.assetName ||
-                          project.asset?.assetType ||
-                          'Asset'}
-                      </strong>
-
-                      <span>
-                        {project.asset?.assetId ||
-                          'Asset ID unavailable'}
-                      </span>
-
-                    </div>
-
-
-                    <span
-                      className={`investigation-status ${project.asset?.verificationStatus ===
-                          'Verified'
-                          ? 'normal'
-                          : 'warning'
-                        }`}
-                    >
-                      {project.asset?.verificationStatus ||
-                        'Pending Verification'}
+                    <span>
+                      {project.asset?.assetId ||
+                        'Asset ID unavailable'}
                     </span>
 
                   </div>
 
 
-                  <div className="asset-progress-comparison">
-
-                    <div>
-
-                      <span>
-                        Reported
-                      </span>
-
-                      <strong>
-                        {project.asset
-                          ?.reportedCompletion ??
-                          physicalPercent}%
-                      </strong>
-
-                    </div>
-
-
-                    <div>
-
-                      <span>
-                        Field Verified
-                      </span>
-
-                      <strong>
-                        {project.asset
-                          ?.verifiedCompletion != null
-                          ? `${project.asset.verifiedCompletion}%`
-                          : 'Pending'}
-                      </strong>
-
-                    </div>
-
-                  </div>
-
-
-                  <p>
-
-                    {project.asset
-                      ?.verificationStatus ===
+                  <span
+                    className={`investigation-status ${
+                      project.asset?.verificationStatus ===
                       'Verified'
-                      ? 'Reported asset progress has been verified against available field evidence.'
-                      : 'Field verification is required to confirm whether reported physical progress matches the asset actually created on ground.'}
-
-                  </p>
+                        ? 'normal'
+                        : 'warning'
+                    }`}
+                  >
+                    {project.asset?.verificationStatus ||
+                      'Pending Verification'}
+                  </span>
 
                 </div>
 
-              </div>
 
-            </div>
+                <div className="asset-progress-comparison">
+
+                  <div>
+
+                    <span>
+                      Reported
+                    </span>
+
+                    <strong>
+                      {project.asset
+                        ?.reportedCompletion ??
+                        physicalPercent}%
+                    </strong>
+
+                  </div>
 
 
+                  <div>
 
-            {/* =================================================
-              RECOMMENDED INVESTIGATION
-          ================================================= */}
+                    <span>
+                      Field Verified
+                    </span>
 
-            <div className="investigation-recommendation">
+                    <strong>
+                      {project.asset
+                        ?.verifiedCompletion != null
+                        ? `${project.asset.verifiedCompletion}%`
+                        : 'Pending'}
+                    </strong>
 
-              <div>
+                  </div>
 
-                <span className="section-eyebrow">
-                  INVESTIGATOR GUIDANCE
-                </span>
+                </div>
 
-                <h3>
-                  Recommended next step
-                </h3>
 
                 <p>
-                  {risk.recommendation}
+
+                  {project.asset
+                    ?.verificationStatus ===
+                    'Verified'
+                    ? 'Reported asset progress has been verified against available field evidence.'
+                    : 'Field verification is required to confirm whether reported physical progress matches the asset actually created on ground.'}
+
                 </p>
 
               </div>
-
-
-              <button
-                className="primary-btn"
-                onClick={() =>
-                  setModal('audit')
-                }
-              >
-
-                <ShieldCheck size={16} />
-
-                Request Field Audit
-
-              </button>
 
             </div>
 
           </div>
 
-        )}
+
+
+          {/* =================================================
+              RECOMMENDED INVESTIGATION
+          ================================================= */}
+
+          <div className="investigation-recommendation">
+
+            <div>
+
+              <span className="section-eyebrow">
+                INVESTIGATOR GUIDANCE
+              </span>
+
+              <h3>
+                Recommended next step
+              </h3>
+
+              <p>
+                {risk.recommendation}
+              </p>
+
+            </div>
+
+
+            <button
+              className="primary-btn"
+              onClick={() =>
+                setModal('audit')
+              }
+            >
+
+              <ShieldCheck size={16} />
+
+              Request Field Audit
+
+            </button>
+
+          </div>
+
+        </div>
+
+      )}
 
 
 
@@ -2724,236 +2811,235 @@ export function ProjectDetail() {
       {activeTab ===
         'Risk Analysis' && (
 
-          <div className="risk-analysis-page">
+        <div className="risk-analysis-page">
 
-            <div className="risk-analysis-header">
+          <div className="risk-analysis-header">
 
-              <div>
+            <div>
 
-                <span className="eyebrow">
-                  AI RISK INTELLIGENCE
-                </span>
+              <span className="eyebrow">
+                AI RISK INTELLIGENCE
+              </span>
 
-                <h2>
-                  Explainable Project Risk Assessment
-                </h2>
+              <h2>
+                Explainable Project Risk Assessment
+              </h2>
 
-                <p>
-                  Risk score is derived from independent
-                  signals across financial execution,
-                  physical progress, payments, timelines
-                  and compliance indicators.
-                </p>
-
-              </div>
-
-
-              <div className="risk-analysis-score">
-
-                <strong>
-                  {riskScore}
-                </strong>
-
-                <span>
-                  /100
-                </span>
-
-                <small>
-                  {riskText} Risk
-                </small>
-
-              </div>
+              <p>
+                Risk score is derived from independent
+                signals across financial execution,
+                physical progress, payments, timelines
+                and compliance indicators.
+              </p>
 
             </div>
 
 
+            <div className="risk-analysis-score">
 
-            <div className="risk-signal-grid">
+              <strong>
+                {riskScore}
+              </strong>
 
-              {risk.signals?.map(
-                (signal) => (
+              <span>
+                /100
+              </span>
 
-                  <div
-                    className={`risk-signal-card ${signal.detected
-                        ? 'detected'
-                        : 'normal'
-                      }`}
-                    key={signal.id}
-                  >
+              <small>
+                {riskText} Risk
+              </small>
 
-                    <div className="risk-signal-card-top">
+            </div>
 
-                      <div className="risk-signal-icon">
+          </div>
 
-                        {getSignalIcon(
-                          signal.id
+
+
+          <div className="risk-signal-grid">
+
+            {risk.signals?.map(
+              (signal) => (
+
+                <div
+                  className={`risk-signal-card ${
+                    signal.detected
+                      ? 'detected'
+                      : 'normal'
+                  }`}
+                  key={signal.id}
+                >
+
+                  <div className="risk-signal-card-top">
+
+                    <div className="risk-signal-icon">
+
+                      {getSignalIcon(
+                        signal.id
+                      )}
+
+                    </div>
+
+                    <span>
+                      {signal.detected
+                        ? `+${signal.score}`
+                        : 'Clear'}
+                    </span>
+
+                  </div>
+
+
+                  <h3>
+                    {signal.name}
+                  </h3>
+
+                  <small>
+                    {signal.category}
+                  </small>
+
+                  <p>
+                    {signal.explanation}
+                  </p>
+
+
+                  {signal.detected &&
+                    signal.evidence && (
+
+                      <div className="risk-signal-evidence-preview">
+
+                        {renderSignalEvidence(
+                          signal
                         )}
 
                       </div>
 
-                      <span>
-                        {signal.detected
-                          ? `+${signal.score}`
-                          : 'Clear'}
-                      </span>
-
-                    </div>
+                    )}
 
 
-                    <h3>
-                      {signal.name}
-                    </h3>
+                  <div className="risk-signal-footer">
 
-                    <small>
-                      {signal.category}
-                    </small>
+                    <span>
+                      {signal.detected
+                        ? signal.severity
+                        : 'No concern'}
+                    </span>
 
-                    <p>
-                      {signal.explanation}
-                    </p>
-
-
-                    {signal.detected &&
-                      signal.evidence && (
-
-                        <div className="risk-signal-evidence-preview">
-
-                          {renderSignalEvidence(
-                            signal
-                          )}
-
-                        </div>
-
-                      )}
-
-
-                    <div className="risk-signal-footer">
-
-                      <span>
-                        {signal.detected
-                          ? signal.severity
-                          : 'No concern'}
-                      </span>
-
-                      {signal.detected && (
-                        <ChevronRight
-                          size={14}
-                        />
-                      )}
-
-                    </div>
+                    {signal.detected && (
+                      <ChevronRight
+                        size={14}
+                      />
+                    )}
 
                   </div>
 
-                )
-              )}
+                </div>
+
+              )
+            )}
+
+          </div>
+
+
+
+          <div className="investigation-path">
+
+            <div className="investigation-path-header">
+
+              <h3>
+                Investigation Priority
+              </h3>
+
+              <span>
+                {risk.priority}
+              </span>
 
             </div>
 
 
+            <div className="investigation-steps">
 
-            <div className="investigation-path">
-
-              <div className="investigation-path-header">
-
-                <h3>
-                  Investigation Priority
-                </h3>
+              <div className="investigation-step active">
 
                 <span>
-                  {risk.priority}
+                  1
                 </span>
+
+                <div>
+
+                  <strong>
+                    AI Detection
+                  </strong>
+
+                  <small>
+                    Risk signals detected
+                    automatically.
+                  </small>
+
+                </div>
 
               </div>
 
 
-              <div className="investigation-steps">
+              <div className="investigation-step active">
 
-                <div className="investigation-step active">
+                <span>
+                  2
+                </span>
 
-                  <span>
-                    1
-                  </span>
+                <div>
 
-                  <div>
+                  <strong>
+                    Evidence Review
+                  </strong>
 
-                    <strong>
-                      AI Detection
-                    </strong>
-
-                    <small>
-                      Risk signals detected
-                      automatically.
-                    </small>
-
-                  </div>
+                  <small>
+                    Financial, payment,
+                    vendor and execution
+                    evidence correlated.
+                  </small>
 
                 </div>
 
-
-                <div className="investigation-step active">
-
-                  <span>
-                    2
-                  </span>
-
-                  <div>
-
-                    <strong>
-                      Evidence Review
-                    </strong>
-
-                    <small>
-                      Financial, payment,
-                      vendor and execution
-                      evidence correlated.
-                    </small>
-
-                  </div>
-
-                </div>
+              </div>
 
 
-                <div className="investigation-step">
+              <div className="investigation-step">
 
-                  <span>
-                    3
-                  </span>
+                <span>
+                  3
+                </span>
 
-                  <div>
+                <div>
 
-                    <strong>
-                      Field Verification
-                    </strong>
+                  <strong>
+                    Field Verification
+                  </strong>
 
-                    <small>
-                      Confirm reported physical
-                      progress and asset creation.
-                    </small>
-
-                  </div>
+                  <small>
+                    Confirm reported physical
+                    progress and asset creation.
+                  </small>
 
                 </div>
 
+              </div>
 
-                <div className="investigation-step">
 
-                  <span>
-                    4
-                  </span>
+              <div className="investigation-step">
 
-                  <div>
+                <span>
+                  4
+                </span>
 
-                    <strong>
-                      Corrective Action
-                    </strong>
+                <div>
 
-                    <small>
-                      Record and track officer
-                      decision.
-                    </small>
+                  <strong>
+                    Corrective Action
+                  </strong>
 
-                  </div>
+                  <small>
+                    Record and track officer
+                    decision.
+                  </small>
 
                 </div>
 
@@ -2963,11 +3049,174 @@ export function ProjectDetail() {
 
           </div>
 
-        )}
+        </div>
+
+      )}
+
+      {/* =====================================================
+          GAP 6 — ASSET CREATION / GROUND VERIFICATION
+      ===================================================== */}
+
+      {activeTab === 'Asset Verification' && (
+
+        <div className="asset-verification-page">
+
+          <div className="asset-verification-header">
+            <div>
+              <span className="section-eyebrow">
+                06 · GROUND VERIFICATION
+              </span>
+              <h2>Asset Creation & Field Verification</h2>
+              <p>
+                Verify whether the sanctioned work has been physically executed
+                and whether reported progress is supported by field evidence.
+              </p>
+            </div>
+
+            <div className={`asset-verification-status ${assetVerificationClass}`}>
+              {assetVerificationStatus}
+            </div>
+          </div>
+
+          <div className="asset-chain-grid">
+            <div className="asset-chain-card">
+              <span>01 · Sanction</span>
+              <strong>{formatCurrency(sanctionedAmount)}</strong>
+              <small>{project?.sanction?.sanctionOrderNo || 'Sanction order available'}</small>
+            </div>
+            <div className="asset-chain-card">
+              <span>02 · Work</span>
+              <strong>{project?.asset?.assetName || project.name}</strong>
+              <small>{project?.asset?.assetType || project.category || 'MPLADS asset'}</small>
+            </div>
+            <div className="asset-chain-card">
+              <span>03 · Reported</span>
+              <strong>{reportedCompletion}%</strong>
+              <small>Reported physical completion</small>
+            </div>
+            <div className="asset-chain-card">
+              <span>04 · Field</span>
+              <strong>{latestInspection ? `${fieldObservedCompletion}%` : 'Pending'}</strong>
+              <small>{latestInspection ? 'Latest observed completion' : 'Inspection required'}</small>
+            </div>
+          </div>
+
+          <div className="asset-verification-main-grid">
+            <div className="asset-comparison-card">
+              <div className="asset-card-heading">
+                <div>
+                  <span className="section-eyebrow">PHYSICAL PROGRESS CHECK</span>
+                  <h3>Reported vs Field Observed</h3>
+                </div>
+                <span className={`asset-gap-badge ${verificationGap >= 15 ? 'warning' : 'normal'}`}>
+                  {verificationGap > 0 ? `${verificationGap}% gap` : 'Aligned'}
+                </span>
+              </div>
+
+              <div className="asset-progress-comparison">
+                <div>
+                  <span>Reported completion</span>
+                  <strong>{reportedCompletion}%</strong>
+                  <div className="asset-progress-track"><span style={{ width: `${Math.min(reportedCompletion, 100)}%` }} /></div>
+                </div>
+                <div>
+                  <span>Field observed</span>
+                  <strong>{latestInspection ? `${fieldObservedCompletion}%` : '—'}</strong>
+                  <div className="asset-progress-track"><span style={{ width: `${Math.min(fieldObservedCompletion, 100)}%` }} /></div>
+                </div>
+              </div>
+
+              <div className={`asset-verification-alert ${assetVerificationClass}`}>
+                <strong>
+                  {assetVerificationStatus === 'Physical Progress Mismatch'
+                    ? 'Physical progress mismatch detected'
+                    : assetVerificationStatus === 'Verified'
+                      ? 'Asset verification completed'
+                      : 'Field verification required'}
+                </strong>
+                <p>
+                  {assetVerificationStatus === 'Physical Progress Mismatch'
+                    ? `Reported completion is ${verificationGap}% higher than the latest field observation. Review before further release.`
+                    : assetVerificationStatus === 'Verified'
+                      ? 'Available field evidence supports the reported asset completion.'
+                      : 'Request a field inspection to confirm physical execution and asset creation.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="asset-evidence-card">
+              <div className="asset-card-heading">
+                <div>
+                  <span className="section-eyebrow">EVIDENCE</span>
+                  <h3>Ground Verification Sources</h3>
+                </div>
+                <strong>{assetEvidenceItems.filter(item => item.available).length}/{assetEvidenceItems.length}</strong>
+              </div>
+
+              <div className="asset-evidence-list">
+                {assetEvidenceItems.map(item => (
+                  <div className={`asset-evidence-row ${item.available ? 'available' : 'missing'}`} key={item.label}>
+                    <div className="asset-evidence-check">
+                      {item.available ? <CheckCircle size={16} /> : <CircleAlert size={16} />}
+                    </div>
+                    <div>
+                      <strong>{item.label}</strong>
+                      <p>{item.detail}</p>
+                    </div>
+                    <span>{item.available ? 'Available' : 'Missing'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="asset-details-grid">
+            <div className="asset-detail-card">
+              <span className="section-eyebrow">ASSET IDENTITY</span>
+              <div className="asset-detail-row"><span>Asset ID</span><strong>{project?.asset?.assetId || 'Not recorded'}</strong></div>
+              <div className="asset-detail-row"><span>Asset type</span><strong>{project?.asset?.assetType || project.category || 'Not recorded'}</strong></div>
+              <div className="asset-detail-row"><span>Beneficiaries</span><strong>{Number(project?.asset?.beneficiaryCount || project?.beneficiary?.estimatedBeneficiaries || 0).toLocaleString('en-IN')}</strong></div>
+              <div className="asset-detail-row"><span>Creation status</span><strong>{project?.asset?.creationStatus || 'Under verification'}</strong></div>
+            </div>
+
+            <div className="asset-detail-card">
+              <span className="section-eyebrow">LOCATION EVIDENCE</span>
+              <div className="asset-detail-row"><span>Village</span><strong>{project?.location?.village || 'Not recorded'}</strong></div>
+              <div className="asset-detail-row"><span>Block</span><strong>{project?.location?.block || project?.district || 'Not recorded'}</strong></div>
+              <div className="asset-detail-row"><span>Coordinates</span><strong>{project?.location?.latitude && project?.location?.longitude ? `${project.location.latitude}, ${project.location.longitude}` : 'Not available'}</strong></div>
+              <div className="asset-detail-row"><span>Geo status</span><strong>{project?.location?.geoVerified ? 'Geo-verified' : 'Requires verification'}</strong></div>
+            </div>
+          </div>
+
+          <div className="asset-verification-actions">
+            <div>
+              <span className="section-eyebrow">RECOMMENDED ACTION</span>
+              <h3>{assetVerificationStatus === 'Physical Progress Mismatch' ? 'Verify before next payment' : 'Complete field verification'}</h3>
+              <p>
+                {assetVerificationStatus === 'Physical Progress Mismatch'
+                  ? 'The reported physical completion is not fully supported by field evidence. A verification visit should be recorded before the next payment decision.'
+                  : 'Create a field verification record to confirm asset existence, physical progress, location and supporting photographs.'}
+              </p>
+            </div>
+            <div className="asset-action-buttons">
+              <button className="primary-btn" onClick={() => setModal('audit')}>
+                <ShieldCheck size={16} />
+                Request Field Audit
+              </button>
+              <button className="secondary-btn" onClick={() => setActiveTab('Evidence & Investigation')}>
+                <Search size={16} />
+                Review Evidence
+              </button>
+            </div>
+          </div>
+
+        </div>
+      )}
+
 
       {activeTab === 'Duplicate Work' && (
-        <DuplicateWorkPanel project={project} />
-      )}
+  <DuplicateWorkPanel project={project} />
+)}
 
 
 
@@ -3379,12 +3628,13 @@ export function ProjectDetail() {
 
                         <td>
                           <span
-                            className={`investigation-status ${payment.flagged ||
-                                ['Under Review', 'Flagged', 'On Hold']
-                                  .includes(payment.status)
+                            className={`investigation-status ${
+                              payment.flagged ||
+                              ['Under Review', 'Flagged', 'On Hold']
+                                .includes(payment.status)
                                 ? 'warning'
                                 : 'normal'
-                              }`}
+                            }`}
                           >
                             {payment.status || 'Processed'}
                           </span>
@@ -3466,15 +3716,15 @@ export function ProjectDetail() {
               {(financialRiskLevel === 'High' ||
                 flaggedPayments.length > 0) && (
 
-                  <button
-                    className="danger-btn"
-                    onClick={() => setModal('halt')}
-                  >
-                    <AlertTriangle size={15} />
-                    Hold Payment
-                  </button>
+                <button
+                  className="danger-btn"
+                  onClick={() => setModal('halt')}
+                >
+                  <AlertTriangle size={15} />
+                  Hold Payment
+                </button>
 
-                )}
+              )}
 
             </div>
 
@@ -3484,11 +3734,22 @@ export function ProjectDetail() {
 
       )}
 
-      {/* =====================================================
-    PAYMENTS TAB
-===================================================== */}
 
-      
+      {/* =====================================================
+          GAP 7 — ACTION & ALERT CENTER
+      ===================================================== */}
+
+      {activeTab === 'Alerts' && (
+        <ActionAlertCenter
+          project={project}
+          risk={risk}
+          payments={projectPayments}
+          inspections={projectInspections}
+          progress={projectProgress}
+          setModal={setModal}
+          onReviewEvidence={() => setActiveTab('Evidence & Investigation')}
+        />
+      )}
 
 
       {/* =====================================================
@@ -3499,40 +3760,41 @@ export function ProjectDetail() {
         activeTab !== 'Risk Analysis' &&
         activeTab !== 'Evidence & Investigation' &&
         activeTab !== 'Duplicate Work' &&
-        activeTab !== 'Payments' && (
+        activeTab !== 'Payments' &&
+        activeTab !== 'Asset Verification' && (
 
-          <div
-            className="panel"
+        <div
+          className="panel"
+          style={{
+            textAlign: 'center',
+            padding: 40,
+          }}
+        >
+          <h3
             style={{
-              textAlign: 'center',
-              padding: 40,
+              fontSize: 16,
+              fontWeight: 700,
+              color: '#0f172a',
             }}
           >
-            <h3
-              style={{
-                fontSize: 16,
-                fontWeight: 700,
-                color: '#0f172a',
-              }}
-            >
-              {activeTab} Details
-            </h3>
+            {activeTab} Details
+          </h3>
 
-            <p
-              style={{
-                fontSize: 13,
-                color: '#64748b',
-                marginTop: 8,
-              }}
-            >
-              Detailed {activeTab.toLowerCase()}
-              information is synchronized with the
-              project's monitoring and investigation
-              data.
-            </p>
-          </div>
+          <p
+            style={{
+              fontSize: 13,
+              color: '#64748b',
+              marginTop: 8,
+            }}
+          >
+            Detailed {activeTab.toLowerCase()}
+            information is synchronized with the
+            project's monitoring and investigation
+            data.
+          </p>
+        </div>
 
-        )}
+      )}
 
     </div>
   )
@@ -3578,10 +3840,11 @@ function EvidenceChainStep({
   return (
 
     <div
-      className={`evidence-chain-step ${warning
+      className={`evidence-chain-step ${
+        warning
           ? 'warning'
           : ''
-        }`}
+      }`}
     >
 
       <div className="evidence-chain-number">
@@ -3610,10 +3873,11 @@ function EvidenceChainStep({
 
 
         <span
-          className={`evidence-chain-status ${warning
+          className={`evidence-chain-status ${
+            warning
               ? 'warning'
               : 'normal'
-            }`}
+          }`}
         >
           {status}
         </span>
