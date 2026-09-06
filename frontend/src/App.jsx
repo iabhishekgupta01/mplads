@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Activity, AlertTriangle, ArrowUpRight, BarChart3, Bell, Check, ChevronDown, CircleHelp, ClipboardCheck, Clock3, FileText, Filter, IndianRupee, LayoutDashboard, Map, Menu, Search, ShieldCheck, SlidersHorizontal, TrendingUp, Users, X, Zap } from 'lucide-react'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import StrictLandingPage from './pages/LandingPage.jsx'
 import './App.css'
 
 const projectsSeed = [
@@ -40,8 +41,9 @@ function App() {
   const openProject = (id) => { setSelectedId(id); setView('detail'); setEntry('login'); setLoggedIn(true); window.history.pushState({}, '', `/projects/${id}`); setMobileNav(false) }
   const navigate = (next) => { setView(next); setEntry('login'); setLoggedIn(true); window.history.pushState({}, '', pathFromView(next)); setMobileNav(false); if (next !== 'detail') setSelectedId(null) }
   const submitAction = (event) => { event.preventDefault(); const action = modal; const status = action === 'audit' ? 'Under Review' : action === 'halt' ? 'Funds Halted' : 'Resolved'; const actionLabel = action === 'audit' ? 'Requested Field Audit' : action === 'halt' ? 'Halted vendor payment' : 'Marked project resolved'; setProjects((current) => current.map((project) => project.id === selected.id ? { ...project, status } : project)); setAudit((current) => [{ time: '06 Sep 2026, 10:42 AM', actor: 'State Nodal Officer', action: actionLabel, detail: `${selected.name} · Officer action recorded.`, tone: 'human' }, ...current]); setModal(null); showToast(action === 'audit' ? 'Audit request submitted. Project is now under review.' : action === 'halt' ? 'Vendor payment workflow placed on hold.' : 'Project marked as resolved.') }
+  void LandingPage
 
-  if (entry === 'landing') return <LandingPage onEnter={() => { setEntry('login'); window.history.pushState({}, '', '/login') }} />
+  if (entry === 'landing') return <StrictLandingPage onEnter={() => { setEntry('login'); window.history.pushState({}, '', '/login') }} />
   if (!loggedIn) return <LoginPage onLogin={() => { setLoggedIn(true); setView('dashboard'); window.history.pushState({}, '', '/dashboard') }} />
 
   return (
