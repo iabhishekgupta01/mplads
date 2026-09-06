@@ -1,284 +1,1257 @@
-import { useState } from 'react'
-import { ArrowRight, Layers, MapPin, RefreshCw, ShieldAlert, X } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import {
+  ArrowRight,
+  Layers,
+  MapPin,
+  RefreshCw,
+  ShieldAlert,
+  X,
+  ZoomIn,
+  ZoomOut,
+  LocateFixed,
+} from 'lucide-react'
+
+import {
+  MapContainer,
+  TileLayer,
+  CircleMarker,
+  Popup,
+  useMap,
+} from 'react-leaflet'
+
+import 'leaflet/dist/leaflet.css'
+
 import { useApp } from '../context/AppContext.jsx'
 import { riskLabel } from '../utils/formatters.js'
 
-// India States SVG simplified geographic paths & metadata
-const INDIA_STATES = [
-  { id: 'MP', name: 'Madhya Pradesh', path: 'M 220 220 L 320 200 L 340 260 L 250 300 L 190 260 Z', risk: 'High', avgScore: 78, activeProjects: 142 },
-  { id: 'MH', name: 'Maharashtra', path: 'M 180 270 L 260 270 L 280 350 L 180 370 L 150 310 Z', risk: 'Medium', avgScore: 54, activeProjects: 198 },
-  { id: 'UP', name: 'Uttar Pradesh', path: 'M 260 130 L 370 120 L 390 180 L 290 200 L 250 170 Z', risk: 'High', avgScore: 82, activeProjects: 215 },
-  { id: 'RJ', name: 'Rajasthan', path: 'M 120 130 L 230 130 L 220 220 L 140 230 L 100 170 Z', risk: 'Low', avgScore: 38, activeProjects: 165 },
-  { id: 'GJ', name: 'Gujarat', path: 'M 80 210 L 150 220 L 160 280 L 100 290 L 60 250 Z', risk: 'Medium', avgScore: 49, activeProjects: 110 },
-  { id: 'KA', name: 'Karnataka', path: 'M 190 360 L 250 350 L 240 430 L 180 430 L 170 380 Z', risk: 'Low', avgScore: 32, activeProjects: 130 },
-  { id: 'TN', name: 'Tamil Nadu', path: 'M 230 430 L 280 430 L 270 500 L 220 480 Z', risk: 'Medium', avgScore: 44, activeProjects: 124 },
-  { id: 'WB', name: 'West Bengal', path: 'M 400 180 L 440 180 L 430 260 L 390 250 Z', risk: 'High', avgScore: 76, activeProjects: 98 },
-  { id: 'BR', name: 'Bihar', path: 'M 360 160 L 420 160 L 410 200 L 360 200 Z', risk: 'High', avgScore: 84, activeProjects: 145 },
-  { id: 'TS', name: 'Telangana', path: 'M 240 300 L 290 300 L 280 350 L 230 350 Z', risk: 'Medium', avgScore: 58, activeProjects: 88 },
-  { id: 'AP', name: 'Andhra Pradesh', path: 'M 250 350 L 300 350 L 290 420 L 240 410 Z', risk: 'Medium', avgScore: 52, activeProjects: 104 },
-  { id: 'OD', name: 'Odisha', path: 'M 330 240 L 390 240 L 370 300 L 310 290 Z', risk: 'Low', avgScore: 35, activeProjects: 92 },
-  { id: 'PB', name: 'Punjab', path: 'M 170 80 L 210 80 L 200 120 L 160 110 Z', risk: 'Low', avgScore: 28, activeProjects: 64 },
-  { id: 'DL', name: 'Delhi NCR', path: 'M 220 120 L 240 120 L 240 140 L 220 140 Z', risk: 'High', avgScore: 74, activeProjects: 45 },
-  { id: 'AS', name: 'Assam', path: 'M 460 150 L 520 150 L 510 190 L 450 180 Z', risk: 'Medium', avgScore: 61, activeProjects: 76 },
-]
 
-export function GisPage() {
-  const { projects, openProject } = useApp()
-  const [selectedState, setSelectedState] = useState('All')
-  const [riskFilter, setRiskFilter] = useState('All')
-  const [categoryFilter, setCategoryFilter] = useState('All')
-  const [selectedMarker, setSelectedMarker] = useState(null)
-  const [hoveredState, setHoveredState] = useState(null)
+/* =========================================================
+   INDIA STATE CENTRE COORDINATES
+   Used as fallback when a project does not have
+   latitude / longitude in mock data.
+   ========================================================= */
 
-  const statesList = Array.from(new Set(INDIA_STATES.map((s) => s.name)))
-  const categoriesList = ['All', 'Roads', 'Water', 'Education', 'Health', 'Sanitation']
+const STATE_COORDINATES = {
+  'Andhra Pradesh': [15.9129, 79.7400],
+  Assam: [26.2006, 92.9376],
+  Bihar: [25.0961, 85.3131],
+  Chhattisgarh: [21.2787, 81.8661],
+  Delhi: [28.6139, 77.2090],
+  Goa: [15.2993, 74.1240],
+  Gujarat: [22.2587, 71.1924],
+  Haryana: [29.0588, 76.0856],
+  'Himachal Pradesh': [31.1048, 77.1734],
+  Jharkhand: [23.6102, 85.2799],
+  Karnataka: [15.3173, 75.7139],
+  Kerala: [10.8505, 76.2711],
+  'Madhya Pradesh': [22.9734, 78.6569],
+  Maharashtra: [19.7515, 75.7139],
+  Manipur: [24.6637, 93.9063],
+  Meghalaya: [25.4670, 91.3662],
+  Mizoram: [23.1645, 92.9376],
+  Nagaland: [26.1584, 94.5624],
+  Odisha: [20.9517, 85.0985],
+  Punjab: [31.1471, 75.3412],
+  Rajasthan: [27.0238, 74.2179],
+  Sikkim: [27.5330, 88.5122],
+  'Tamil Nadu': [11.1271, 78.6569],
+  Telangana: [18.1124, 79.0193],
+  Tripura: [23.9408, 91.9882],
+  'Uttar Pradesh': [26.8467, 80.9462],
+  Uttarakhand: [30.0668, 79.0193],
+  'West Bengal': [22.9868, 87.8550],
+  Chandigarh: [30.7333, 76.7794],
+  Puducherry: [11.9416, 79.8083],
+  'Jammu and Kashmir': [33.7782, 76.5762],
+  Ladakh: [34.1526, 77.5771],
+  'Andaman and Nicobar Islands': [11.7401, 92.6586],
+  Lakshadweep: [10.5667, 72.6417],
+}
 
-  const filteredProjects = projects.filter((p) => {
-    const stateMatch = selectedState === 'All' || p.state === selectedState || selectedState === 'Madhya Pradesh'
-    const riskMatch = riskFilter === 'All' || riskLabel(p.score).toUpperCase() === riskFilter.toUpperCase()
-    const catMatch = categoryFilter === 'All' || p.category.toLowerCase().includes(categoryFilter.toLowerCase())
-    return stateMatch && riskMatch && catMatch
-  })
 
-  const getStateColor = (risk) => {
-    switch (risk) {
-      case 'High':
-        return '#dc2626'
-      case 'Medium':
-        return '#d97706'
-      case 'Low':
-        return '#16a34a'
-      default:
-        return '#2563eb'
-    }
-  }
+/* =========================================================
+   MAP CONTROLS
+   ========================================================= */
+
+function MapControls() {
+  const map = useMap()
 
   return (
-    <div className="gis-page-container">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-        <div>
-          <h2 style={{ fontSize: 22, fontWeight: 800, color: '#0f172a' }}>Interactive National GIS Risk Map</h2>
-          <p style={{ fontSize: 13, color: '#64748b', marginTop: 3 }}>
-            MoSPI — DIID Geographic Intelligence: Monitor district-level anomaly clusters across 28 States & 8 UTs.
-          </p>
-        </div>
-        <button
-          className="secondary-btn"
-          onClick={() => {
-            setSelectedState('All')
-            setRiskFilter('All')
-            setCategoryFilter('All')
-            setSelectedMarker(null)
-          }}
-        >
-          <RefreshCw size={14} /> Reset Filters
-        </button>
-      </div>
+    <div className="gis-map-controls">
 
-      {/* MULTI-FILTER BAR */}
-      <div className="filter-bar-wrap">
-        <div className="filter-group">
-          <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b' }}>State / Jurisdiction</label>
-          <select value={selectedState} onChange={(e) => setSelectedState(e.target.value)}>
-            <option value="All">All India (28 States & 8 UTs)</option>
-            {statesList.map((st) => (
-              <option key={st} value={st}>
-                {st}
-              </option>
-            ))}
-          </select>
-        </div>
+      <button
+        type="button"
+        title="Zoom in"
+        onClick={() => map.zoomIn()}
+      >
+        <ZoomIn size={16} />
+      </button>
 
-        <div className="filter-group">
-          <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b' }}>Risk Severity</label>
-          <select value={riskFilter} onChange={(e) => setRiskFilter(e.target.value)}>
-            <option value="All">All Risk Levels</option>
-            <option value="High">High Risk (Score &gt; 70)</option>
-            <option value="Medium">Medium Risk (Score 40-70)</option>
-            <option value="Low">Low Risk (Score &lt; 40)</option>
-          </select>
-        </div>
+      <button
+        type="button"
+        title="Zoom out"
+        onClick={() => map.zoomOut()}
+      >
+        <ZoomOut size={16} />
+      </button>
 
-        <div className="filter-group">
-          <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b' }}>Project Sector</label>
-          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-            {categoriesList.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
+      <button
+        type="button"
+        title="Reset India view"
+        onClick={() =>
+          map.setView([22.5, 79], 5, {
+            animate: true,
+          })
+        }
+      >
+        <LocateFixed size={16} />
+      </button>
 
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 12, color: '#2563eb', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Layers size={15} /> {filteredProjects.length} Active Geo Markers
-          </span>
-        </div>
-      </div>
-
-      {/* GIS MAP VIEWPORT */}
-      <div className="gis-map-container">
-        <div className="gis-map-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#ffffff' }}>
-            <MapPin size={18} style={{ color: '#38bdf8' }} />
-            <strong style={{ fontSize: 14 }}>NATIONAL GEOSPATIAL ANOMALY MONITOR</strong>
-            <span style={{ fontSize: 11, background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', padding: '2px 8px', borderRadius: 12 }}>
-              LIVE GIS STREAM
-            </span>
-          </div>
-
-          <div style={{ display: 'flex', gap: 16, fontSize: 11, color: '#94a3b8' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#dc2626' }}></span> High Anomaly
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#d97706' }}></span> Moderate
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#16a34a' }}></span> Low Anomaly
-            </span>
-          </div>
-        </div>
-
-        <div className="gis-map-body">
-          {/* INDIA GEOGRAPHIC SVG LAYER */}
-          <svg className="india-svg-container" viewBox="0 0 600 560" fill="none">
-            {/* GRID LINES FOR GIS FEEL */}
-            <pattern id="gis-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255, 255, 255, 0.04)" strokeWidth="1" />
-            </pattern>
-            <rect width="600" height="560" fill="url(#gis-grid)" />
-
-            {/* STATE BOUNDARY PATHS */}
-            {INDIA_STATES.map((st) => {
-              const isSelected = selectedState === st.name
-              const color = getStateColor(st.risk)
-              return (
-                <g key={st.id}>
-                  <path
-                    d={st.path}
-                    className="svg-state-path"
-                    fill={color}
-                    fillOpacity={isSelected ? 0.75 : 0.25}
-                    onMouseEnter={() => setHoveredState(st)}
-                    onMouseLeave={() => setHoveredState(null)}
-                    onClick={() => setSelectedState(st.name)}
-                  />
-                  <text
-                    x={st.path.split(' ')[1]}
-                    y={st.path.split(' ')[2]}
-                    fill="#cbd5e1"
-                    fontSize="9"
-                    fontWeight="700"
-                    pointerEvents="none"
-                    opacity="0.8"
-                  >
-                    {st.id}
-                  </text>
-                </g>
-              )
-            })}
-
-            {/* PROJECT ANOMALY PIN MARKERS */}
-            {filteredProjects.map((p, idx) => {
-              const rLabel = riskLabel(p.score)
-              const pinColor = rLabel === 'HIGH' ? '#dc2626' : rLabel === 'MEDIUM' ? '#d97706' : '#16a34a'
-              // Deterministic coordinates spread over map
-              const cx = 180 + ((idx * 53) % 240)
-              const cy = 140 + ((idx * 67) % 280)
-
-              return (
-                <g key={p.id} className="svg-map-pin" onClick={() => setSelectedMarker(p)}>
-                  <circle cx={cx} cy={cy} r="14" fill={pinColor} fillOpacity="0.2" />
-                  <circle cx={cx} cy={cy} r="8" fill={pinColor} stroke="#ffffff" strokeWidth="2" />
-                  <text x={cx} y={cy + 3} fill="#ffffff" fontSize="8" fontWeight="800" textAnchor="middle">
-                    {p.score}
-                  </text>
-                </g>
-              )
-            })}
-          </svg>
-
-          {/* HOVER TOOLTIP FOR STATE */}
-          {hoveredState && (
-            <div
-              style={{
-                position: 'absolute',
-                top: 20,
-                left: 20,
-                background: 'rgba(15, 23, 42, 0.9)',
-                color: '#ffffff',
-                padding: '10px 14px',
-                borderRadius: 6,
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                fontSize: 12,
-                pointerEvents: 'none',
-              }}
-            >
-              <strong style={{ display: 'block', fontSize: 13, color: '#38bdf8' }}>{hoveredState.name}</strong>
-              <span>
-                Avg Risk Score: <strong>{hoveredState.avgScore}</strong> ({hoveredState.risk} Risk)
-              </span>
-              <br />
-              <span style={{ fontSize: 11, color: '#94a3b8' }}>{hoveredState.activeProjects} Monitored Works</span>
-            </div>
-          )}
-
-          {/* SELECTED MARKER CARD POPUP */}
-          {selectedMarker && (
-            <div className="map-card-floating">
-              <button
-                onClick={() => setSelectedMarker(null)}
-                style={{ position: 'absolute', right: 12, top: 12, border: 0, background: 'transparent', color: '#94a3b8' }}
-              >
-                <X size={16} />
-              </button>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#38bdf8', fontWeight: 700 }}>
-                <MapPin size={14} /> {selectedMarker.district}, {selectedMarker.state}
-              </div>
-
-              <strong style={{ display: 'block', fontSize: 14, color: '#ffffff', margin: '8px 0 4px' }}>
-                {selectedMarker.name}
-              </strong>
-              <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 12 }}>ID: {selectedMarker.id} · {selectedMarker.category}</div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, background: 'rgba(255,255,255,0.05)', padding: 10, borderRadius: 6, marginBottom: 14, fontSize: 11 }}>
-                <div>
-                  <span style={{ color: '#94a3b8', display: 'block' }}>Risk Score</span>
-                  <strong style={{ color: selectedMarker.score > 70 ? '#f87171' : '#fbbf24', fontSize: 14 }}>
-                    {selectedMarker.score}
-                  </strong>
-                </div>
-                <div>
-                  <span style={{ color: '#94a3b8', display: 'block' }}>Physical</span>
-                  <strong style={{ color: '#ffffff' }}>{selectedMarker.physical}%</strong>
-                </div>
-                <div>
-                  <span style={{ color: '#94a3b8', display: 'block' }}>Paid</span>
-                  <strong style={{ color: '#ffffff' }}>{selectedMarker.expenditure}%</strong>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#fbbf24', marginBottom: 14 }}>
-                <ShieldAlert size={14} />
-                <span>Financial payout exceeds physical execution by {Math.abs(selectedMarker.expenditure - selectedMarker.physical)}%</span>
-              </div>
-
-              <button
-                className="primary-btn"
-                style={{ width: '100%', fontSize: 12, padding: 9, background: '#2563eb' }}
-                onClick={() => openProject(selectedMarker.id)}
-              >
-                Investigate Work File <ArrowRight size={14} />
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   )
 }
+
+
+/* =========================================================
+   PROJECT COORDINATES
+   ========================================================= */
+
+function getCoordinates(project, index) {
+  const latitude = Number(
+    project?.latitude ??
+      project?.lat ??
+      project?.location?.latitude
+  )
+
+  const longitude = Number(
+    project?.longitude ??
+      project?.lng ??
+      project?.lon ??
+      project?.location?.longitude
+  )
+
+  /*
+   * If project already contains valid coordinates,
+   * use them directly.
+   */
+
+  if (
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    latitude >= 6 &&
+    latitude <= 38 &&
+    longitude >= 68 &&
+    longitude <= 98
+  ) {
+    return [latitude, longitude]
+  }
+
+  /*
+   * Otherwise use state centre with deterministic
+   * offsets so markers don't completely overlap.
+   */
+
+  const fallback =
+    STATE_COORDINATES[project?.state] ||
+    [22.9734, 78.6569]
+
+  const row = Math.floor(index / 4)
+  const column = index % 4
+
+  return [
+    fallback[0] + (row % 3 - 1) * 0.18,
+    fallback[1] + (column - 1.5) * 0.18,
+  ]
+}
+
+
+/* =========================================================
+   RISK HELPERS
+   ========================================================= */
+
+function getRiskColor(score) {
+  const label = riskLabel(score)?.toUpperCase()
+
+  if (label === 'HIGH') return '#c62828'
+  if (label === 'MEDIUM') return '#c8902f'
+
+  return '#10834b'
+}
+
+
+function getRiskText(score) {
+  const label = riskLabel(score)?.toUpperCase()
+
+  if (label === 'HIGH') return 'High Risk'
+  if (label === 'MEDIUM') return 'Medium Risk'
+
+  return 'Low Risk'
+}
+
+
+/* =========================================================
+   GIS PAGE
+   ========================================================= */
+
+export function GisPage() {
+
+  const {
+    projects,
+    openProject,
+
+    /*
+     * GIS filter state stored in AppContext.
+     * This allows GIS selections to be reused by
+     * other pages such as Projects.
+     */
+
+    setGisStateFilter,
+    setGisDistrictFilter,
+  } = useApp()
+
+
+  /* -------------------------------------------------------
+     LOCAL GIS FILTER STATE
+     ------------------------------------------------------- */
+
+  const [selectedState, setSelectedState] = useState('All')
+  const [selectedDistrict, setSelectedDistrict] = useState('All')
+
+  const [riskFilter, setRiskFilter] = useState('All')
+  const [categoryFilter, setCategoryFilter] = useState('All')
+
+  const [selectedMarker, setSelectedMarker] = useState(null)
+
+
+  /* -------------------------------------------------------
+     PROJECT CATEGORIES
+     ------------------------------------------------------- */
+
+  const categoriesList = [
+    'All',
+    'Roads',
+    'Water',
+    'Education',
+    'Health',
+    'Sanitation',
+  ]
+
+
+  /* -------------------------------------------------------
+     STATES FROM ACTUAL PROJECT DATA
+     ------------------------------------------------------- */
+
+  const statesList = useMemo(() => {
+
+    return Array.from(
+      new Set(
+        projects
+          .map((project) => project?.state)
+          .filter(Boolean)
+      )
+    ).sort()
+
+  }, [projects])
+
+
+  /* -------------------------------------------------------
+     DISTRICTS
+
+     If a state is selected, only districts belonging
+     to that state are shown.
+     ------------------------------------------------------- */
+
+  const districtsList = useMemo(() => {
+
+    const sourceProjects =
+      selectedState === 'All'
+        ? projects
+        : projects.filter(
+            (project) =>
+              project?.state === selectedState
+          )
+
+    return Array.from(
+      new Set(
+        sourceProjects
+          .map((project) => project?.district)
+          .filter(Boolean)
+      )
+    ).sort()
+
+  }, [projects, selectedState])
+
+
+  /* -------------------------------------------------------
+     FILTERED PROJECTS
+
+     These are the projects currently represented by
+     the markers on the map.
+     ------------------------------------------------------- */
+
+  const filteredProjects = useMemo(() => {
+
+    return projects.filter((project) => {
+
+      const stateMatch =
+        selectedState === 'All' ||
+        project.state === selectedState
+
+
+      const districtMatch =
+        selectedDistrict === 'All' ||
+        project.district === selectedDistrict
+
+
+      const projectRisk =
+        riskLabel(project.score)?.toUpperCase()
+
+
+      const riskMatch =
+        riskFilter === 'All' ||
+        projectRisk === riskFilter.toUpperCase()
+
+
+      const categoryMatch =
+        categoryFilter === 'All' ||
+        project.category
+          ?.toLowerCase()
+          .includes(categoryFilter.toLowerCase())
+
+
+      return (
+        stateMatch &&
+        districtMatch &&
+        riskMatch &&
+        categoryMatch
+      )
+
+    })
+
+  }, [
+    projects,
+    selectedState,
+    selectedDistrict,
+    riskFilter,
+    categoryFilter,
+  ])
+
+
+  /* -------------------------------------------------------
+     AREA PROJECTS
+
+     This intentionally ignores risk/category filters.
+     It tells us the actual size of the selected
+     geographic area.
+     ------------------------------------------------------- */
+
+  const selectedAreaProjects = useMemo(() => {
+
+    return projects.filter((project) => {
+
+      const stateMatch =
+        selectedState === 'All' ||
+        project.state === selectedState
+
+      const districtMatch =
+        selectedDistrict === 'All' ||
+        project.district === selectedDistrict
+
+      return stateMatch && districtMatch
+
+    })
+
+  }, [
+    projects,
+    selectedState,
+    selectedDistrict,
+  ])
+
+
+  /* -------------------------------------------------------
+     RISK COUNTS
+     ------------------------------------------------------- */
+
+  const highRiskCount = filteredProjects.filter(
+    (project) =>
+      riskLabel(project.score)?.toUpperCase() === 'HIGH'
+  ).length
+
+
+  const mediumRiskCount = filteredProjects.filter(
+    (project) =>
+      riskLabel(project.score)?.toUpperCase() === 'MEDIUM'
+  ).length
+
+
+  const lowRiskCount = filteredProjects.filter(
+    (project) =>
+      riskLabel(project.score)?.toUpperCase() === 'LOW'
+  ).length
+
+
+  /* -------------------------------------------------------
+     AREA AVERAGE RISK
+     ------------------------------------------------------- */
+
+  const averageRisk = selectedAreaProjects.length
+    ? Math.round(
+        selectedAreaProjects.reduce(
+          (sum, project) =>
+            sum + Number(project.score || 0),
+          0
+        ) / selectedAreaProjects.length
+      )
+    : 0
+
+
+  /* -------------------------------------------------------
+     AREA EXPENDITURE
+
+     Project expenditure is represented as percentage
+     in the current mock data.
+     ------------------------------------------------------- */
+
+  const averageExpenditure =
+    selectedAreaProjects.length
+      ? Math.round(
+          selectedAreaProjects.reduce(
+            (sum, project) =>
+              sum + Number(project.expenditure || 0),
+            0
+          ) / selectedAreaProjects.length
+        )
+      : 0
+
+
+  /* -------------------------------------------------------
+     RESET
+     ------------------------------------------------------- */
+
+  const resetFilters = () => {
+
+    setSelectedState('All')
+    setSelectedDistrict('All')
+
+    setRiskFilter('All')
+    setCategoryFilter('All')
+
+    setSelectedMarker(null)
+
+    /*
+     * Clear global GIS filters too.
+     */
+
+    setGisStateFilter('All')
+    setGisDistrictFilter('All')
+  }
+
+
+  /* -------------------------------------------------------
+     STATE CHANGE
+     ------------------------------------------------------- */
+
+  const handleStateChange = (value) => {
+
+    setSelectedState(value)
+
+    /*
+     * A district belongs to a state.
+     * Therefore changing state must reset district.
+     */
+
+    setSelectedDistrict('All')
+
+    setGisStateFilter(value)
+    setGisDistrictFilter('All')
+
+    setSelectedMarker(null)
+  }
+
+
+  /* -------------------------------------------------------
+     DISTRICT CHANGE
+     ------------------------------------------------------- */
+
+  const handleDistrictChange = (value) => {
+
+    setSelectedDistrict(value)
+
+    setGisDistrictFilter(value)
+
+    setSelectedMarker(null)
+  }
+
+
+  return (
+
+    <div className="gis-page-container">
+
+
+      {/* =================================================
+          PAGE HEADER
+          ================================================= */}
+
+      <div className="gis-page-heading">
+
+        <div>
+
+          <div className="gis-eyebrow">
+            GEOGRAPHIC RISK INTELLIGENCE
+          </div>
+
+          <h2>
+            Interactive National GIS Risk Map
+          </h2>
+
+          <p>
+            Geographic view of MPLADS works, risk
+            signals, and project-level anomalies
+            for investigation.
+          </p>
+
+        </div>
+
+
+        <button
+          type="button"
+          className="secondary-btn gis-reset-btn"
+          onClick={resetFilters}
+        >
+
+          <RefreshCw size={15} />
+
+          Reset Filters
+
+        </button>
+
+      </div>
+
+
+      {/* =================================================
+          FILTER BAR
+          ================================================= */}
+
+      <div className="filter-bar-wrap gis-filter-bar">
+
+
+        {/* STATE */}
+
+        <div className="filter-group">
+
+          <label>
+            State / Jurisdiction
+          </label>
+
+          <select
+            value={selectedState}
+            onChange={(event) =>
+              handleStateChange(event.target.value)
+            }
+          >
+
+            <option value="All">
+              All India — 28 States & 8 UTs
+            </option>
+
+            {statesList.map((state) => (
+
+              <option
+                key={state}
+                value={state}
+              >
+                {state}
+              </option>
+
+            ))}
+
+          </select>
+
+        </div>
+
+
+        {/* DISTRICT */}
+
+        <div className="filter-group">
+
+          <label>
+            District
+          </label>
+
+          <select
+            value={selectedDistrict}
+            disabled={selectedState === 'All'}
+            onChange={(event) =>
+              handleDistrictChange(
+                event.target.value
+              )
+            }
+          >
+
+            <option value="All">
+              All Districts
+            </option>
+
+            {districtsList.map((district) => (
+
+              <option
+                key={district}
+                value={district}
+              >
+                {district}
+              </option>
+
+            ))}
+
+          </select>
+
+        </div>
+
+
+        {/* RISK */}
+
+        <div className="filter-group">
+
+          <label>
+            Risk Severity
+          </label>
+
+          <select
+            value={riskFilter}
+            onChange={(event) =>
+              setRiskFilter(event.target.value)
+            }
+          >
+
+            <option value="All">
+              All Risk Levels
+            </option>
+
+            <option value="High">
+              High Risk — &gt;70
+            </option>
+
+            <option value="Medium">
+              Medium Risk — 40–70
+            </option>
+
+            <option value="Low">
+              Low Risk — &lt;40
+            </option>
+
+          </select>
+
+        </div>
+
+
+        {/* CATEGORY */}
+
+        <div className="filter-group">
+
+          <label>
+            Project Sector
+          </label>
+
+          <select
+            value={categoryFilter}
+            onChange={(event) =>
+              setCategoryFilter(
+                event.target.value
+              )
+            }
+          >
+
+            {categoriesList.map((category) => (
+
+              <option
+                key={category}
+                value={category}
+              >
+                {category}
+              </option>
+
+            ))}
+
+          </select>
+
+        </div>
+
+
+        {/* MARKER COUNT */}
+
+        <div className="gis-marker-count">
+
+          <Layers size={16} />
+
+          <strong>
+            {filteredProjects.length}
+          </strong>
+
+          <span>
+            active geo markers
+          </span>
+
+        </div>
+
+      </div>
+
+
+      {/* =================================================
+          MAP
+          ================================================= */}
+
+      <div className="gis-map-container">
+
+
+        {/* MAP HEADER */}
+
+        <div className="gis-map-header">
+
+          <div className="gis-map-title">
+
+            <MapPin size={18} />
+
+            <div>
+
+              <strong>
+                NATIONAL GEOSPATIAL ANOMALY MONITOR
+              </strong>
+
+              <span>
+                Live project risk intelligence
+              </span>
+
+            </div>
+
+          </div>
+
+
+          {/* LEGEND */}
+
+          <div className="gis-map-legend">
+
+            <span>
+
+              <i className="legend-dot high" />
+
+              High
+
+              <b>
+                {highRiskCount}
+              </b>
+
+            </span>
+
+
+            <span>
+
+              <i className="legend-dot medium" />
+
+              Medium
+
+              <b>
+                {mediumRiskCount}
+              </b>
+
+            </span>
+
+
+            <span>
+
+              <i className="legend-dot low" />
+
+              Low
+
+              <b>
+                {lowRiskCount}
+              </b>
+
+            </span>
+
+          </div>
+
+        </div>
+
+
+        {/* MAP BODY */}
+
+        <div className="gis-map-body">
+
+
+          <MapContainer
+            center={[22.5, 79]}
+            zoom={5}
+            minZoom={4}
+            maxZoom={12}
+            scrollWheelZoom
+            zoomControl={false}
+            className="gis-leaflet-map"
+          >
+
+            <TileLayer
+              attribution="&copy; OpenStreetMap contributors"
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+
+
+            <MapControls />
+
+
+            {/* =========================================
+                PROJECT MARKERS
+                ========================================= */}
+
+            {filteredProjects.map(
+              (project, index) => {
+
+                const coordinates =
+                  getCoordinates(
+                    project,
+                    index
+                  )
+
+
+                const color =
+                  getRiskColor(project.score)
+
+
+                const risk =
+                  getRiskText(project.score)
+
+
+                return (
+
+                  <CircleMarker
+                    key={project.id}
+                    center={coordinates}
+                    radius={8}
+                    pathOptions={{
+                      color: '#ffffff',
+                      weight: 2,
+                      fillColor: color,
+                      fillOpacity: 0.95,
+                    }}
+                    eventHandlers={{
+                      click: () =>
+                        setSelectedMarker(project),
+                    }}
+                  >
+
+                    <Popup>
+
+                      <div className="gis-popup">
+
+
+                        {/* LOCATION */}
+
+                        <div className="gis-popup-location">
+
+                          <MapPin size={13} />
+
+                          {project.district}
+
+                          {project.district &&
+                            project.state
+                            ? ', '
+                            : ''}
+
+                          {project.state}
+
+                        </div>
+
+
+                        {/* PROJECT NAME */}
+
+                        <div className="gis-popup-title">
+
+                          {project.name}
+
+                        </div>
+
+
+                        {/* PROJECT ID */}
+
+                        <div className="gis-popup-id">
+
+                          {project.id}
+
+                          <span>
+                            •
+                          </span>
+
+                          {project.category}
+
+                        </div>
+
+
+                        {/* RISK */}
+
+                        <div className="gis-popup-risk">
+
+                          <span>
+                            Risk score
+                          </span>
+
+                          <strong
+                            style={{
+                              color,
+                            }}
+                          >
+                            {project.score}
+                          </strong>
+
+                          <small>
+                            {risk}
+                          </small>
+
+                        </div>
+
+
+                        {/* INVESTIGATION */}
+
+                        <button
+                          type="button"
+                          className="gis-popup-action"
+                          onClick={() =>
+                            openProject(
+                              project.id
+                            )
+                          }
+                        >
+
+                          Investigate
+
+                          <ArrowRight size={13} />
+
+                        </button>
+
+                      </div>
+
+                    </Popup>
+
+                  </CircleMarker>
+
+                )
+
+              }
+            )}
+
+          </MapContainer>
+
+
+          {/* =================================================
+              MAP STATUS
+              ================================================= */}
+
+          <div className="gis-map-status">
+
+            <span className="gis-live-dot" />
+
+            <span>
+              Live project view
+            </span>
+
+            <strong>
+              {filteredProjects.length}
+            </strong>
+
+            <span>
+              works in current filter
+            </span>
+
+          </div>
+
+
+          {/* =================================================
+              SELECTED PROJECT CARD
+              ================================================= */}
+
+          {selectedMarker && (
+
+            <div className="map-card-floating">
+
+
+              <button
+                type="button"
+                className="gis-close-btn"
+                onClick={() =>
+                  setSelectedMarker(null)
+                }
+                aria-label="Close project details"
+              >
+
+                <X size={17} />
+
+              </button>
+
+
+              {/* LOCATION */}
+
+              <div className="gis-project-location">
+
+                <MapPin size={14} />
+
+                {selectedMarker.district}
+
+                {selectedMarker.district &&
+                  selectedMarker.state
+                  ? ', '
+                  : ''}
+
+                {selectedMarker.state}
+
+              </div>
+
+
+              {/* NAME */}
+
+              <strong className="gis-project-name">
+
+                {selectedMarker.name}
+
+              </strong>
+
+
+              {/* ID */}
+
+              <div className="gis-project-id">
+
+                ID: {selectedMarker.id}
+
+                <span>
+                  •
+                </span>
+
+                {selectedMarker.category}
+
+              </div>
+
+
+              {/* METRICS */}
+
+              <div className="gis-project-metrics">
+
+
+                <div>
+
+                  <span>
+                    Risk score
+                  </span>
+
+                  <strong
+                    style={{
+                      color:
+                        getRiskColor(
+                          selectedMarker.score
+                        ),
+                    }}
+                  >
+                    {selectedMarker.score}
+                  </strong>
+
+                </div>
+
+
+                <div>
+
+                  <span>
+                    Physical
+                  </span>
+
+                  <strong>
+                    {selectedMarker.physical}%
+                  </strong>
+
+                </div>
+
+
+                <div>
+
+                  <span>
+                    Paid
+                  </span>
+
+                  <strong>
+                    {selectedMarker.expenditure}%
+                  </strong>
+
+                </div>
+
+              </div>
+
+
+              {/* WARNING */}
+
+              <div className="gis-project-warning">
+
+                <ShieldAlert size={15} />
+
+                <span>
+
+                  Financial payout exceeds
+                  physical execution by{' '}
+
+                  <strong>
+                    {Math.abs(
+                      Number(
+                        selectedMarker.expenditure
+                      ) -
+                      Number(
+                        selectedMarker.physical
+                      )
+                    )}
+                    %
+                  </strong>
+
+                </span>
+
+              </div>
+
+
+              {/* INVESTIGATE */}
+
+              <button
+                type="button"
+                className="primary-btn gis-investigate-btn"
+                onClick={() =>
+                  openProject(
+                    selectedMarker.id
+                  )
+                }
+              >
+
+                Investigate Work File
+
+                <ArrowRight size={15} />
+
+              </button>
+
+            </div>
+
+          )}
+
+        </div>
+
+      </div>
+
+
+      {/* =================================================
+          SELECTED AREA INTELLIGENCE
+          ================================================= */}
+
+      {selectedState !== 'All' && (
+
+        <div className="gis-selected-area">
+
+
+          <div>
+
+            <div className="gis-eyebrow">
+              SELECTED GEOGRAPHIC AREA
+            </div>
+
+
+            <h2>
+
+              {selectedDistrict !== 'All'
+                ? `${selectedDistrict}, ${selectedState}`
+                : selectedState}
+
+            </h2>
+
+
+            <p>
+
+              {selectedAreaProjects.length}{' '}
+              projects monitored
+
+              {highRiskCount > 0
+                ? ` · ${highRiskCount} high-risk projects currently matching the filters`
+                : ' · No high-risk projects in the current filter'}
+
+            </p>
+
+          </div>
+
+
+          <div className="gis-area-actions">
+
+            <div className="gis-area-mini-stat">
+
+              <span>
+                Avg Risk
+              </span>
+
+              <strong>
+                {averageRisk}
+              </strong>
+
+            </div>
+
+
+            <div className="gis-area-mini-stat">
+
+              <span>
+                Avg Expenditure
+              </span>
+
+              <strong>
+                {averageExpenditure}%
+              </strong>
+
+            </div>
+
+
+            <button
+              type="button"
+              className="primary-btn"
+              onClick={() => {
+
+                /*
+                 * For now this selects the highest-risk
+                 * project in the selected geographic area.
+                 *
+                 * Projects-page global filtering will use
+                 * gisStateFilter / gisDistrictFilter from
+                 * AppContext in the next step.
+                 */
+
+                const highestRiskProject =
+                  [...selectedAreaProjects]
+                    .sort(
+                      (a, b) =>
+                        Number(b.score || 0) -
+                        Number(a.score || 0)
+                    )[0]
+
+                if (highestRiskProject) {
+                  openProject(
+                    highestRiskProject.id
+                  )
+                }
+
+              }}
+              disabled={
+                selectedAreaProjects.length === 0
+              }
+            >
+
+              View Highest-Risk Project
+
+              <ArrowRight size={15} />
+
+            </button>
+
+          </div>
+
+        </div>
+
+      )}
+
+    </div>
+
+  )
+}
+
 
 export default GisPage

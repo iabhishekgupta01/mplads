@@ -1,6 +1,7 @@
 import { AlertTriangle, ArrowLeft, ShieldAlert } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { formatCurrency } from '../utils/formatters.js'
+import '../styles/payment-detail.css'
 
 export function PaymentDetail() {
   const {

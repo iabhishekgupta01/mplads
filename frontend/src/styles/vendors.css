@@ -1,0 +1,390 @@
+
+/* =========================================================
+   VENDORS — CLEAN, SPACIOUS, LANDING-STYLE UI
+   Scoped only to .vendors-page-container
+   ========================================================= */
+
+.vendors-page-container {
+  position: relative;
+  min-height: calc(100vh - 40px);
+  padding: 8px 6px 40px;
+  overflow: hidden;
+  font-family: 'Manrope', sans-serif;
+  background: linear-gradient(
+    135deg,
+    #f8fbf9 0%,
+    #f1f8f3 52%,
+    #fcfaf5 100%
+  );
+}
+
+/* Organic background shapes */
+.vendors-page-container::before {
+  content: '';
+  position: absolute;
+  width: 340px;
+  height: 290px;
+  top: -130px;
+  right: -100px;
+  border-radius: 48% 52% 62% 38%;
+  background: rgba(16, 131, 75, 0.055);
+  pointer-events: none;
+}
+
+.vendors-page-container::after {
+  content: '';
+  position: absolute;
+  width: 260px;
+  height: 250px;
+  bottom: -130px;
+  left: -100px;
+  border-radius: 60% 40% 35% 65%;
+  background: rgba(200, 144, 47, 0.045);
+  pointer-events: none;
+}
+
+.vendors-page-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+
+.vendors-page-container .page-header {
+  margin-bottom: 30px;
+}
+
+.vendors-page-container h1 {
+  color: #172b36;
+  font-size: 30px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+}
+
+.vendors-page-container h2 {
+  color: #172b36;
+}
+
+.vendors-page-container .page-header p {
+  max-width: 720px;
+  margin-top: 9px;
+  color: #667a72;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+
+/* =========================================================
+   REGISTER BOX
+   ========================================================= */
+
+.vendors-page-container .panel {
+  margin-top: 0;
+  background: #ffffff;
+  border: none !important;
+  border-radius: 20px;
+  box-shadow: 0 12px 34px rgba(23, 43, 54, 0.065);
+  overflow: hidden;
+}
+
+/* Panel heading */
+.vendors-page-container .panel-head {
+  padding: 25px 28px 22px;
+  background: #ffffff;
+}
+
+.vendors-page-container .panel-head h3 {
+  margin: 0;
+  color: #172b36;
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 800;
+  letter-spacing: -0.25px;
+}
+
+.vendors-page-container .panel-head p {
+  margin-top: 7px;
+  color: #71837b;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.vendors-page-container .table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  padding: 0 8px 10px;
+}
+
+.vendors-page-container table {
+  width: 100%;
+  min-width: 820px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.vendors-page-container thead {
+  background: #f3f9f5;
+}
+
+.vendors-page-container th {
+  height: 52px;
+  padding: 0 20px;
+  border: none !important;
+  color: #5f756b;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.065em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.vendors-page-container td {
+  height: 82px;
+  padding: 14px 20px;
+  border: none !important;
+  border-top: 1px solid #eef3ef !important;
+  color: #53665f;
+  font-size: 13px;
+  font-weight: 600;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.vendors-page-container tbody tr {
+  background: #ffffff;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+
+.vendors-page-container tbody tr:hover {
+  background: #f8fcf9;
+}
+
+.vendors-page-container tbody tr:first-child td {
+  border-top: none !important;
+}
+
+
+/* =========================================================
+   VENDOR NAME
+   ========================================================= */
+
+.vendors-page-container .project-link {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 190px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.vendors-page-container .project-link strong {
+  color: #203b31;
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 800;
+  transition: color 0.18s ease;
+}
+
+.vendors-page-container .project-link small {
+  color: #899c93;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  line-height: 1.3;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.vendors-page-container .project-link:hover strong {
+  color: #10834b;
+}
+
+
+/* =========================================================
+   NUMERIC DATA
+   ========================================================= */
+
+.vendors-page-container td:nth-child(2),
+.vendors-page-container td:nth-child(4) {
+  color: #344e43;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.vendors-page-container td:nth-child(3) {
+  color: #172b36;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   RISK
+   ========================================================= */
+
+.vendors-page-container td:nth-child(5) {
+  min-width: 125px;
+}
+
+.vendors-page-container .risk-badge {
+  border: none !important;
+}
+
+
+/* =========================================================
+   INVESTIGATE
+   ========================================================= */
+
+.vendors-page-container .text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 11px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: #10834b;
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease;
+}
+
+.vendors-page-container .text-button:hover {
+  background: #eef8f2;
+  color: #096b3b;
+}
+
+.vendors-page-container .text-button svg {
+  width: 15px;
+  height: 15px;
+  transition: transform 0.18s ease;
+}
+
+.vendors-page-container .text-button:hover svg {
+  transform: translate(2px, -2px);
+}
+
+
+/* =========================================================
+   TABLE COLUMN BALANCE
+   ========================================================= */
+
+.vendors-page-container th:nth-child(1),
+.vendors-page-container td:nth-child(1) {
+  width: 30%;
+}
+
+.vendors-page-container th:nth-child(2),
+.vendors-page-container td:nth-child(2) {
+  width: 12%;
+}
+
+.vendors-page-container th:nth-child(3),
+.vendors-page-container td:nth-child(3) {
+  width: 19%;
+}
+
+.vendors-page-container th:nth-child(4),
+.vendors-page-container td:nth-child(4) {
+  width: 12%;
+}
+
+.vendors-page-container th:nth-child(5),
+.vendors-page-container td:nth-child(5) {
+  width: 13%;
+}
+
+.vendors-page-container th:nth-child(6),
+.vendors-page-container td:nth-child(6) {
+  width: 14%;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .vendors-page-container {
+    padding: 6px 2px 30px;
+  }
+
+  .vendors-page-container h1 {
+    font-size: 27px;
+  }
+
+  .vendors-page-container .page-header {
+    margin-bottom: 24px;
+  }
+
+  .vendors-page-container .panel {
+    border-radius: 17px;
+  }
+
+  .vendors-page-container .panel-head {
+    padding: 22px;
+  }
+
+  .vendors-page-container .table-wrap {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .vendors-page-container th,
+  .vendors-page-container td {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .vendors-page-container {
+    padding-bottom: 22px;
+  }
+
+  .vendors-page-container h1 {
+    font-size: 24px;
+  }
+
+  .vendors-page-container .page-header p {
+    font-size: 13px;
+  }
+
+  .vendors-page-container .panel {
+    border-radius: 14px;
+  }
+
+  .vendors-page-container .panel-head {
+    padding: 19px 17px;
+  }
+
+  .vendors-page-container .panel-head h3 {
+    font-size: 16px;
+  }
+
+  .vendors-page-container td {
+    height: 76px;
+  }
+}
+

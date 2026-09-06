@@ -1,0 +1,366 @@
+/* =========================================================
+   PAYMENT DETAIL
+   Compact • Readable • Transaction Focused
+   ========================================================= */
+
+.payment-detail-container {
+  position: relative;
+  min-height: calc(100vh - 40px);
+  padding: 4px 2px 30px;
+  overflow: hidden;
+  font-family: 'Manrope', sans-serif;
+  background: linear-gradient(
+    135deg,
+    #f7fbf8 0%,
+    #f1f8f3 48%,
+    #fbfaf5 100%
+  );
+}
+
+.payment-detail-container::before {
+  content: '';
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  top: -120px;
+  right: -90px;
+  border-radius: 48% 52% 65% 35%;
+  background: rgba(16, 131, 75, 0.055);
+  pointer-events: none;
+}
+
+.payment-detail-container::after {
+  content: '';
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  bottom: -100px;
+  left: -80px;
+  border-radius: 60% 40% 35% 65%;
+  background: rgba(200, 144, 47, 0.045);
+  pointer-events: none;
+}
+
+.payment-detail-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+
+/* =========================================================
+   TOP BAR
+   ========================================================= */
+
+.payment-detail-container > div:first-child {
+  margin-bottom: 16px !important;
+}
+
+.payment-detail-container .breadcrumb-line {
+  color: #71837b;
+  font-size: 12px;
+}
+
+.payment-detail-container .breadcrumb-line span {
+  color: #172b36;
+  font-weight: 700;
+}
+
+.payment-detail-container .secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 7px 11px;
+  border: none !important;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #53665f;
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(23, 43, 54, 0.04);
+}
+
+.payment-detail-container .secondary-btn:hover {
+  background: #eef8f2;
+  color: #10834b;
+}
+
+
+/* =========================================================
+   TRANSACTION HEADER
+   ========================================================= */
+
+.payment-detail-container .project-header-card {
+  margin-bottom: 12px;
+  padding: 17px 19px;
+  border: none !important;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 7px 20px rgba(23, 43, 54, 0.05);
+}
+
+.payment-detail-container .project-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.payment-detail-container .project-header-card h1 {
+  margin: 0;
+  color: #172b36 !important;
+  font-size: 23px !important;
+  line-height: 1.25;
+  font-weight: 800 !important;
+  letter-spacing: -0.4px;
+}
+
+.payment-detail-container .project-header-card p {
+  margin-top: 7px !important;
+  color: #667a72 !important;
+  font-size: 13px !important;
+  line-height: 1.5;
+}
+
+.payment-detail-container .project-header-card p strong {
+  color: #344e43;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.payment-detail-container .status-badge-clean {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 29px;
+  padding: 5px 10px;
+  border: none !important;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.payment-detail-container .status-badge-clean.ongoing {
+  background: #eef8f2;
+  color: #10834b;
+}
+
+.payment-detail-container .status-badge-clean.delayed {
+  background: #fff0eb;
+  color: #c62828;
+}
+
+
+/* =========================================================
+   TRANSACTION SUMMARY
+   ========================================================= */
+
+.payment-detail-container .kpi-6-strip {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  margin-bottom: 13px !important;
+}
+
+.payment-detail-container .kpi-6-item {
+  min-height: 88px;
+  padding: 14px 16px;
+  border: none !important;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 5px 16px rgba(23, 43, 54, 0.045);
+}
+
+.payment-detail-container .kpi-6-item > span {
+  display: block;
+  margin-bottom: 7px;
+  color: #667a72;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.payment-detail-container .kpi-6-item > strong {
+  display: block;
+  color: #172b36;
+  font-family: 'DM Mono', monospace;
+  font-size: 17px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+
+/* Amount */
+.payment-detail-container .kpi-6-item:first-child > strong {
+  font-size: 19px !important;
+}
+
+
+/* Vendor risk */
+.payment-detail-container .kpi-6-item:nth-child(3) > strong {
+  color: #c8902f;
+}
+
+
+/* AI anomaly */
+.payment-detail-container .kpi-6-item:nth-child(4) > strong {
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px !important;
+  font-weight: 800;
+}
+
+.payment-detail-container .kpi-6-item:nth-child(4) > strong[style*="dc2626"] {
+  color: #c62828 !important;
+}
+
+.payment-detail-container .kpi-6-item:nth-child(4) > strong[style*="16a34a"] {
+  color: #10834b !important;
+}
+
+
+/* =========================================================
+   MAIN CONTENT
+   ========================================================= */
+
+.payment-detail-container .dashboard-grid-3 {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr) !important;
+  gap: 13px !important;
+}
+
+
+/* =========================================================
+   PANELS
+   ========================================================= */
+
+.payment-detail-container .panel {
+  padding: 0;
+  border: none !important;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 7px 20px rgba(23, 43, 54, 0.05);
+  overflow: hidden;
+}
+
+.payment-detail-container .panel-head {
+  padding: 17px 19px 13px;
+}
+
+.payment-detail-container .panel-head h2 {
+  margin: 0;
+  color: #172b36;
+  font-size: 16px;
+  line-height: 1.3;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   ANOMALY BOX
+   ========================================================= */
+
+.payment-detail-container .panel > div[style*="fef2f2"] {
+  margin: 2px 19px 14px !important;
+  padding: 13px 14px !important;
+  border: none !important;
+  border-radius: 10px !important;
+  background: #fff0eb !important;
+}
+
+.payment-detail-container .panel > div[style*="fef2f2"] > div {
+  color: #c62828 !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+}
+
+.payment-detail-container .panel > div[style*="fef2f2"] p {
+  margin-top: 7px !important;
+  color: #8f3028 !important;
+  font-size: 13px !important;
+  line-height: 1.55 !important;
+}
+
+
+/* Recommendation text */
+.payment-detail-container .panel > div[style*="fef2f2"] + div {
+  margin: 0 19px 18px;
+  color: #667a72 !important;
+  font-size: 13px !important;
+  line-height: 1.55 !important;
+}
+
+
+/* =========================================================
+   OFFICER ACTION
+   ========================================================= */
+
+.payment-detail-container .panel > p {
+  margin: 0 19px 15px !important;
+  color: #667a72 !important;
+  font-size: 13px !important;
+  line-height: 1.55 !important;
+}
+
+.payment-detail-container .danger-btn {
+  min-height: 40px;
+  margin: 0 19px 19px;
+  width: calc(100% - 38px) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 12px !important;
+  border: none !important;
+  border-radius: 9px;
+  background: #c62828;
+  color: #ffffff;
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px !important;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.18s ease;
+}
+
+.payment-detail-container .danger-btn:hover:not(:disabled) {
+  background: #a91f1f;
+}
+
+.payment-detail-container .danger-btn:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .payment-detail-container .kpi-6-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .payment-detail-container .dashboard-grid-3 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .payment-detail-container .project-header-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .payment-detail-container .project-header-card h1 {
+    font-size: 21px !important;
+  }
+
+  .payment-detail-container .kpi-6-strip {
+    grid-template-columns: 1fr !important;
+  }
+}

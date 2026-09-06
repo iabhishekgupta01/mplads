@@ -1,0 +1,527 @@
+/* =========================================================
+   VENDOR DETAIL
+   Clean + Compact + Transaction Focused
+   ========================================================= */
+
+/* Remove the dotted app background only when this page is open */
+.app-shell:has(.vendor-detail-page) {
+  background-image: none !important;
+  background-color: #f5f9f6;
+}
+
+.vendor-detail-page {
+  width: 100%;
+  min-height: calc(100vh - 40px);
+  padding: 2px 0 30px;
+  background: #f5f9f6;
+  color: #172b36;
+  font-family: 'Manrope', sans-serif;
+}
+
+
+/* =========================================================
+   BACK + HEADER
+   ========================================================= */
+
+.vendor-detail-page .back-link {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 12px;
+  padding: 3px 0;
+  border: 0;
+  background: transparent;
+  color: #64766e;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.vendor-detail-page .back-link:hover {
+  color: #10834b;
+}
+
+.vendor-detail-page .page-header {
+  margin-bottom: 17px;
+}
+
+.vendor-detail-page .eyebrow {
+  margin-bottom: 5px;
+  color: #10834b;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.vendor-detail-page .page-header h1 {
+  margin: 0;
+  color: #172b36;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+}
+
+.vendor-detail-page .page-header .muted {
+  margin-top: 6px;
+  color: #667a72;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   RISK BADGE
+   ========================================================= */
+
+.vendor-detail-page .risk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 11px;
+  border: 0;
+  border-radius: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.vendor-detail-page .risk-badge i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.vendor-detail-page .risk-badge.high {
+  background: #fff0eb;
+  color: #c62828;
+}
+
+.vendor-detail-page .risk-badge.high i {
+  background: #c62828;
+}
+
+.vendor-detail-page .risk-badge.medium {
+  background: #fff8eb;
+  color: #a66d18;
+}
+
+.vendor-detail-page .risk-badge.medium i {
+  background: #c8902f;
+}
+
+.vendor-detail-page .risk-badge.low {
+  background: #eef8f2;
+  color: #10834b;
+}
+
+.vendor-detail-page .risk-badge.low i {
+  background: #10834b;
+}
+
+
+/* =========================================================
+   KPI CARDS
+   Compact, not oversized
+   ========================================================= */
+
+.vendor-detail-page .stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 13px;
+}
+
+.vendor-detail-page .stat-card {
+  min-width: 0;
+  min-height: 92px;
+  padding: 14px 16px;
+  border: 0 !important;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(23, 43, 54, 0.045);
+}
+
+.vendor-detail-page .stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.vendor-detail-page .stat-top span {
+  color: #667a72;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.vendor-detail-page .stat-top svg {
+  width: 17px;
+  height: 17px;
+  color: #10834b;
+}
+
+.vendor-detail-page .stat-card strong {
+  display: block;
+  color: #172b36;
+  font-family: 'DM Mono', monospace;
+  font-size: 20px;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.vendor-detail-page .stat-card.critical strong {
+  color: #c62828;
+}
+
+.vendor-detail-page .stat-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 7px;
+  color: #10834b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.vendor-detail-page .stat-meta svg {
+  width: 13px;
+  height: 13px;
+}
+
+.vendor-detail-page .stat-meta span {
+  color: #98a69f;
+}
+
+
+/* =========================================================
+   SECONDARY CONTENT
+   ========================================================= */
+
+.vendor-detail-page .detail-grid {
+  display: grid;
+  grid-template-columns: minmax(270px, 0.72fr) minmax(0, 1.65fr);
+  gap: 12px;
+  margin-bottom: 13px;
+}
+
+
+/* =========================================================
+   PANELS
+   ========================================================= */
+
+.vendor-detail-page .panel {
+  margin-bottom: 0;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 13px;
+  background: #ffffff;
+  box-shadow: 0 5px 17px rgba(23, 43, 54, 0.045);
+}
+
+.vendor-detail-page .panel:hover {
+  border: 0 !important;
+  box-shadow: 0 5px 17px rgba(23, 43, 54, 0.045);
+}
+
+.vendor-detail-page .panel-head {
+  margin-bottom: 0;
+  padding: 16px 18px 12px;
+}
+
+.vendor-detail-page .panel-head h2 {
+  color: #172b36;
+  font-size: 16px;
+  line-height: 1.3;
+  font-weight: 800;
+}
+
+.vendor-detail-page .panel-head p {
+  margin-top: 5px;
+  color: #74847d;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+
+/* =========================================================
+   AI VENDOR ANALYSIS
+   Keep small and useful
+   ========================================================= */
+
+.vendor-detail-page .reason {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 4px 18px 17px;
+  padding: 12px;
+  border: 0;
+  border-radius: 10px;
+  background: #fff8eb;
+}
+
+.vendor-detail-page .reason > span {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #ffefd0;
+  color: #b7791f;
+}
+
+.vendor-detail-page .reason strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #344e43;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.vendor-detail-page .reason p {
+  margin: 0;
+  color: #66766e;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+
+/* =========================================================
+   PROJECT TABLE
+   ========================================================= */
+
+.vendor-detail-page .table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  padding: 0 6px 6px;
+}
+
+.vendor-detail-page table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.vendor-detail-page th {
+  height: 43px;
+  padding: 0 13px;
+  border: 0 !important;
+  background: #f3f8f5;
+  color: #60736b;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.055em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.vendor-detail-page td {
+  padding: 11px 13px;
+  border: 0 !important;
+  border-top: 1px solid #edf3ef !important;
+  color: #53665f;
+  font-size: 12px;
+  line-height: 1.4;
+  vertical-align: middle;
+}
+
+.vendor-detail-page tbody tr:hover {
+  background: #f8fcf9;
+}
+
+
+/* =========================================================
+   PROJECT NAME
+   Fixes the ugly browser-default button from screenshot
+   ========================================================= */
+
+.vendor-detail-page .project-link {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 190px;
+  padding: 0;
+  border: 0 !important;
+  outline: 0;
+  background: transparent !important;
+  color: #172b36;
+  text-align: left;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+}
+
+.vendor-detail-page .project-link strong {
+  color: #263f35;
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.vendor-detail-page .project-link small {
+  color: #899a93;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  line-height: 1.2;
+  font-weight: 500;
+}
+
+.vendor-detail-page .project-link:hover strong {
+  color: #10834b;
+}
+
+
+/* Location from ProjectTable */
+.vendor-detail-page table td:nth-child(2) {
+  min-width: 120px;
+}
+
+.vendor-detail-page table td:nth-child(2) small {
+  display: block;
+  margin-top: 3px;
+  color: #899a93;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+}
+
+
+/* Utilized */
+.vendor-detail-page table td:nth-child(3) {
+  color: #172b36;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.vendor-detail-page .status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: #eef8f2;
+  color: #10834b;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.vendor-detail-page .status-badge.delayed {
+  background: #fff0eb;
+  color: #c62828;
+}
+
+.vendor-detail-page .status-badge.under-review {
+  background: #fff8eb;
+  color: #a66d18;
+}
+
+.vendor-detail-page .status-badge.processed,
+.vendor-detail-page .status-badge.released {
+  background: #eef8f2;
+  color: #10834b;
+}
+
+
+/* Open project icon */
+.vendor-detail-page .icon-button {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: #eef8f2;
+  color: #10834b;
+}
+
+.vendor-detail-page .icon-button:hover {
+  background: #10834b;
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   PAYMENT TIMELINE
+   This is the main focus
+   ========================================================= */
+
+.vendor-detail-page > .panel:last-child {
+  margin-top: 0;
+}
+
+.vendor-detail-page > .panel:last-child .panel-head {
+  padding-bottom: 13px;
+}
+
+.vendor-detail-page > .panel:last-child table {
+  min-width: 760px;
+}
+
+.vendor-detail-page > .panel:last-child td {
+  height: 58px;
+  font-size: 12px;
+}
+
+.vendor-detail-page > .panel:last-child td:first-child,
+.vendor-detail-page > .panel:last-child td:nth-child(2),
+.vendor-detail-page > .panel:last-child td:nth-child(3) {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+}
+
+.vendor-detail-page > .panel:last-child td:first-child {
+  color: #172b36;
+  font-weight: 700;
+}
+
+.vendor-detail-page > .panel:last-child td:nth-child(3) {
+  color: #172b36;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.vendor-detail-page > .panel:last-child td:last-child {
+  min-width: 280px;
+  color: #596b63;
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+  .vendor-detail-page .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .vendor-detail-page .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .vendor-detail-page .page-header h1 {
+    font-size: 24px;
+  }
+
+  .vendor-detail-page .stat-grid {
+    grid-template-columns: 1fr;
+  }
+}

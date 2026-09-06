@@ -171,3 +171,1432 @@
   color: #c8902f;
   font-weight: 700;
 }
+
+
+/* =========================================================
+   AI RISK INTELLIGENCE - PROJECT DETAIL
+   ========================================================= */
+
+.ai-assessment-mini {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 11px;
+  border: 1px solid #dbe7df;
+  background: #f6faf7;
+  border-radius: 7px;
+  color: var(--sl-green);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ai-assessment-mini strong {
+  color: #475569;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.ai-powered-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 7px;
+  border-radius: 5px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.risk-confidence {
+  display: block;
+  margin-top: 5px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.risk-priority-box {
+  margin: 8px auto 0;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #f8fafc;
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  max-width: 220px;
+}
+
+.risk-priority-box span {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.risk-priority-box strong {
+  color: #0f172a;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.signal-count {
+  padding: 4px 7px;
+  background: #fff7ed;
+  color: #c2410c;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.ai-evidence-item {
+  align-items: flex-start;
+}
+
+.evidence-icon {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: #fff1f2;
+  color: #dc2626;
+}
+
+.evidence-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.evidence-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 3px;
+}
+
+.evidence-title-row strong {
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.signal-score {
+  color: #dc2626;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.evidence-data {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.evidence-data span {
+  padding: 4px 7px;
+  border-radius: 4px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.evidence-data strong {
+  color: #334155;
+}
+
+.risk-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  color: #15803d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.prediction-row span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.prediction-note {
+  margin-top: 12px;
+  padding: 9px 10px;
+  background: #f8fafc;
+  border-radius: 5px;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.section-heading-with-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.section-heading-with-badge h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.warning-badge {
+  padding: 5px 8px;
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.gap-callout-clean {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* =========================================================
+   AI SUMMARY
+   ========================================================= */
+
+.ai-summary-panel {
+  display: flex;
+  gap: 13px;
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid #dbe7df;
+  border-radius: 9px;
+  background: linear-gradient(
+    135deg,
+    #f7fbf8 0%,
+    #ffffff 100%
+  );
+}
+
+.ai-summary-icon {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--sl-mint);
+  color: var(--sl-green);
+}
+
+.ai-summary-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.ai-summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ai-summary-header strong {
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ai-summary-header span {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.ai-summary-content p {
+  margin: 5px 0 12px;
+  color: #475569;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.ai-recommendation {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.ai-recommendation span {
+  color: #64748b;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ai-recommendation strong {
+  color: #0f172a;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   RISK ANALYSIS TAB
+   ========================================================= */
+
+.risk-analysis-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.risk-analysis-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  padding: 22px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+.risk-analysis-header > div:first-child {
+  flex: 1;
+}
+
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 6px;
+  color: var(--sl-green);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.risk-analysis-header h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.risk-analysis-header p {
+  max-width: 680px;
+  margin: 7px 0 0;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.risk-analysis-score {
+  width: 120px;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid #e2e8f0;
+}
+
+.risk-analysis-score strong {
+  color: #0f172a;
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.risk-analysis-score > span {
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.risk-analysis-score small {
+  margin-top: 6px;
+  color: #dc2626;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.risk-signal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.risk-signal-card {
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  background: #ffffff;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.risk-signal-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.risk-signal-card.detected {
+  border-color: #fecaca;
+}
+
+.risk-signal-card.normal {
+  border-color: #dbe7df;
+}
+
+.risk-signal-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.risk-signal-icon {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: #fff1f2;
+  color: #dc2626;
+}
+
+.risk-signal-card.normal .risk-signal-icon {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.risk-signal-card-top > span {
+  color: #dc2626;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.risk-signal-card.normal .risk-signal-card-top > span {
+  color: #16a34a;
+}
+
+.risk-signal-card h3 {
+  margin: 13px 0 3px;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.risk-signal-card > small {
+  color: #94a3b8;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.risk-signal-card p {
+  min-height: 55px;
+  margin: 10px 0;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.risk-signal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 9px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.risk-signal-footer span {
+  color: #dc2626;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.risk-signal-card.normal .risk-signal-footer span {
+  color: #16a34a;
+}
+
+/* =========================================================
+   INVESTIGATION PATH
+   ========================================================= */
+
+.investigation-path {
+  padding: 18px;
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  background: #ffffff;
+}
+
+.investigation-path-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 18px;
+}
+
+.investigation-path-header h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.investigation-path-header span {
+  padding: 5px 8px;
+  background: #fff7ed;
+  color: #c2410c;
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.investigation-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.investigation-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  background: #f8fafc;
+}
+
+.investigation-step > span {
+  width: 23px;
+  height: 23px;
+  min-width: 23px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #64748b;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.investigation-step.active {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.investigation-step.active > span {
+  background: var(--sl-green);
+  color: #ffffff;
+}
+
+.investigation-step strong {
+  display: block;
+  color: #334155;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.investigation-step small {
+  display: block;
+  margin-top: 3px;
+  color: #94a3b8;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .risk-signal-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .investigation-steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 800px) {
+  .risk-analysis-header {
+    flex-direction: column;
+  }
+
+  .risk-analysis-score {
+    width: 100%;
+    border-left: 0;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 15px;
+  }
+
+  .risk-signal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .investigation-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-assessment-mini {
+    display: none;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* =========================================================
+   PROJECTS PAGE VISUAL POLISH
+   Safe overrides — existing Project Detail styles preserved
+   ========================================================= */
+
+.projects-page-container {
+  position: relative;
+  min-height: calc(100vh - 72px);
+  padding: 30px 32px 42px;
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      135deg,
+      #fbfffb 0%,
+      #f6faf7 55%,
+      #edf7f0 100%
+    );
+}
+
+/* Simple organic landing-page shape */
+
+.projects-page-container::before {
+  content: "";
+  position: absolute;
+
+  width: 420px;
+  height: 250px;
+
+  top: -130px;
+  right: -110px;
+
+  border-radius: 0 0 0 100%;
+
+  background: #e5f4e9;
+
+  pointer-events: none;
+}
+
+.projects-page-container::after {
+  content: "";
+  position: absolute;
+
+  width: 280px;
+  height: 210px;
+
+  bottom: -120px;
+  left: -100px;
+
+  border-radius: 50% 50% 0 0;
+
+  background: #f1f8f3;
+
+  pointer-events: none;
+}
+
+.projects-page-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.projects-page-container .breadcrumb-line {
+  margin-bottom: 9px;
+
+  color: #899c93;
+
+  font-family: "Manrope", sans-serif;
+  font-size: 12px;
+}
+
+.projects-page-container .breadcrumb-line span {
+  color: #10834b;
+  font-weight: 700;
+}
+
+.projects-page-container h2 {
+  margin: 0;
+
+  color: #172b36 !important;
+
+  font-family: "Manrope", sans-serif;
+  font-size: 27px !important;
+  line-height: 1.3;
+
+  font-weight: 800 !important;
+  letter-spacing: -0.025em;
+}
+
+.projects-page-container > div:first-child p {
+  margin-top: 5px !important;
+
+  color: #66786f !important;
+
+  font-family: "Manrope", sans-serif;
+  font-size: 14px !important;
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   HEADER ADD PROJECT BUTTON
+   ========================================================= */
+
+.projects-page-container > div:first-child .primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  min-height: 42px;
+
+  padding: 0 16px;
+
+  border: none !important;
+  border-radius: 9px;
+
+  background: #10834b;
+  color: #ffffff;
+
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+
+  box-shadow: 0 5px 14px rgba(16, 131, 75, 0.14);
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.projects-page-container > div:first-child .primary-btn:hover {
+  background: #096b3b;
+  transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   FILTER AREA
+   ========================================================= */
+
+.projects-page-container .filter-bar-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 13px;
+
+  margin-bottom: 20px;
+  padding: 15px 17px;
+
+  border: none !important;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow: 0 6px 22px rgba(23, 43, 54, 0.055);
+}
+
+.projects-page-container .filter-group {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+
+  min-width: 125px;
+}
+
+.projects-page-container .filter-group label {
+  color: #66786f !important;
+
+  font-family: "Manrope", sans-serif;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.projects-page-container .filter-group select {
+  height: 40px;
+
+  min-width: 125px;
+
+  padding: 0 30px 0 11px;
+
+  border: none !important;
+  border-radius: 8px;
+
+  outline: none;
+
+  background: #f2f7f4;
+  color: #172b36;
+
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.projects-page-container .filter-group select:focus {
+  box-shadow: 0 0 0 3px rgba(16, 131, 75, 0.10);
+}
+
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+.projects-page-container .filter-search-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  height: 40px;
+
+  min-width: 190px;
+
+  padding: 0 12px;
+
+  border: none !important;
+  border-radius: 8px;
+
+  background: #f2f7f4;
+}
+
+.projects-page-container .filter-search-input input {
+  width: 100%;
+
+  border: none !important;
+  outline: none;
+
+  background: transparent;
+
+  color: #172b36;
+
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+}
+
+.projects-page-container .filter-search-input input::placeholder {
+  color: #899c93;
+}
+
+
+/* =========================================================
+   FILTER BUTTON
+   ========================================================= */
+
+.projects-page-container .filter-bar-wrap > .secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  height: 40px;
+
+  padding: 0 13px;
+
+  border: none !important;
+  border-radius: 8px;
+
+  background: #eef8f2;
+  color: #10834b;
+
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.projects-page-container .filter-bar-wrap > .secondary-btn:hover {
+  background: #e1f2e7;
+}
+
+
+/* =========================================================
+   PROJECT TABLE
+   ========================================================= */
+
+/*
+   IMPORTANT:
+   The generic .panel is intentionally NOT changed.
+   These rules only affect the Projects table.
+*/
+
+.projects-page-container > .panel {
+  border: none !important;
+  border-radius: 16px !important;
+
+  background: #ffffff;
+
+  box-shadow: 0 7px 25px rgba(23, 43, 54, 0.06);
+
+  overflow: hidden;
+}
+
+.projects-page-container .custom-table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  font-family: "Manrope", sans-serif;
+}
+
+.projects-page-container .custom-table thead {
+  background: #f1f7f3;
+}
+
+.projects-page-container .custom-table th {
+  padding: 14px 15px;
+
+  border: none !important;
+
+  color: #53665f;
+
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+
+  white-space: nowrap;
+}
+
+.projects-page-container .custom-table td {
+  padding: 15px;
+
+  border: none !important;
+  border-bottom: 1px solid #edf3ef !important;
+
+  color: #53665f;
+
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+
+  vertical-align: middle;
+}
+
+.projects-page-container .custom-table tbody tr {
+  background: #ffffff;
+
+  cursor: pointer;
+
+  transition: background 0.15s ease;
+}
+
+.projects-page-container .custom-table tbody tr:hover {
+  background: #f6faf7;
+}
+
+.projects-page-container .custom-table tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+
+/* =========================================================
+   PROJECT ID + NAME
+   ========================================================= */
+
+.projects-page-container .custom-table td:first-child {
+  color: #10834b !important;
+
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+
+  font-weight: 700 !important;
+}
+
+.projects-page-container .custom-table td:nth-child(2) {
+  min-width: 190px;
+
+  color: #172b36 !important;
+
+  font-size: 14px;
+
+  font-weight: 750 !important;
+
+  line-height: 1.4;
+}
+
+.projects-page-container .custom-table td:nth-child(3) {
+  color: #53665f;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   PROGRESS BAR
+   ========================================================= */
+
+.projects-page-container .custom-table td:nth-child(5) > div {
+  min-width: 115px;
+}
+
+.projects-page-container .custom-table td:nth-child(5) > div > div:first-child {
+  height: 7px !important;
+
+  background: #e5eee8 !important;
+
+  border-radius: 10px !important;
+}
+
+.projects-page-container .custom-table td:nth-child(5) > div > div:first-child > div {
+  border-radius: 10px !important;
+}
+
+
+/* =========================================================
+   EXPENDITURE
+   ========================================================= */
+
+.projects-page-container .custom-table td:nth-child(6) {
+  color: #172b36;
+
+  font-size: 13px;
+
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   RISK SCORE
+   ========================================================= */
+
+.projects-page-container .custom-table td:nth-child(7) {
+  color: #172b36;
+
+  font-size: 15px;
+
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   RISK BADGES
+   ========================================================= */
+
+.projects-page-container .custom-table .badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 7px 10px;
+
+  border: none !important;
+  border-radius: 7px;
+
+  font-family: "Manrope", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.projects-page-container .custom-table .badge-pill i {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: currentColor;
+}
+
+.projects-page-container .custom-table .badge-pill.high {
+  color: #c62828;
+  background: #fff0eb;
+}
+
+.projects-page-container .custom-table .badge-pill.medium {
+  color: #a96e16;
+  background: #fff8eb;
+}
+
+.projects-page-container .custom-table .badge-pill.low {
+  color: #10834b;
+  background: #eef8f2;
+}
+
+
+/* =========================================================
+   STATUS BADGES
+   ========================================================= */
+
+.projects-page-container .custom-table .status-badge-clean {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 7px 10px;
+
+  border: none !important;
+  border-radius: 7px;
+
+  font-family: "Manrope", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.projects-page-container .custom-table .status-badge-clean.ongoing {
+  color: #10834b;
+  background: #eef8f2;
+}
+
+.projects-page-container .custom-table .status-badge-clean.delayed {
+  color: #c62828;
+  background: #fff0eb;
+}
+
+.projects-page-container .custom-table .status-badge-clean.under-review {
+  color: #a96e16;
+  background: #fff8eb;
+}
+
+.projects-page-container .custom-table .status-badge-clean.completed {
+  color: #53665f;
+  background: #eef2ef;
+}
+
+
+/* =========================================================
+   VIEW BUTTON
+   ========================================================= */
+
+.projects-page-container .custom-table .secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 34px;
+  height: 34px;
+
+  padding: 0 !important;
+
+  border: none !important;
+  border-radius: 8px !important;
+
+  background: #eef8f2;
+  color: #10834b;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.projects-page-container .custom-table .secondary-btn:hover {
+  background: #dff1e5;
+}
+
+
+/* =========================================================
+   PAGINATION
+   ========================================================= */
+
+.projects-page-container .pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  min-height: 58px;
+
+  border-top: none !important;
+
+  background: #ffffff;
+
+  color: #66786f;
+
+  font-family: "Manrope", sans-serif;
+  font-size: 12px;
+}
+
+.projects-page-container .pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.projects-page-container .page-num-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 32px;
+  height: 32px;
+
+  padding: 0;
+
+  border: none !important;
+  border-radius: 7px;
+
+  background: #f1f7f3;
+  color: #53665f;
+
+  font-family: "Manrope", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.projects-page-container .page-num-btn:hover {
+  background: #e5f2e9;
+  color: #10834b;
+}
+
+.projects-page-container .page-num-btn.active {
+  background: #10834b;
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1150px) {
+  .projects-page-container .filter-bar-wrap {
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+  .projects-page-container .filter-search-input {
+    margin-left: 0 !important;
+    flex: 1;
+  }
+}
+
+@media (max-width: 800px) {
+  .projects-page-container {
+    padding: 22px 18px 35px;
+  }
+
+  .projects-page-container > div:first-child {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .projects-page-container > div:first-child .primary-btn {
+    align-self: flex-start;
+  }
+
+  .projects-page-container .filter-bar-wrap {
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 12px;
+  }
+
+  .projects-page-container .filter-group,
+  .projects-page-container .filter-group select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .projects-page-container .filter-search-input {
+    width: 100%;
+    min-width: 0;
+    margin-left: 0 !important;
+  }
+
+  .projects-page-container .filter-bar-wrap > .secondary-btn {
+    width: 100%;
+  }
+
+  .projects-page-container .table-responsive {
+    overflow-x: auto;
+  }
+
+  .projects-page-container .custom-table {
+    min-width: 1050px;
+  }
+}
+
+@media (max-width: 550px) {
+  .projects-page-container {
+    padding: 20px 14px 30px;
+  }
+
+  .projects-page-container h2 {
+    font-size: 24px !important;
+  }
+
+  .projects-page-container .filter-bar-wrap {
+    grid-template-columns: 1fr;
+  }
+
+  .projects-page-container .pagination-bar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+/* =========================================================
+   GIS → PROJECTS LOCATION CONTEXT
+   ========================================================= */
+
+.projects-location-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding: 11px 14px;
+  background: #eef8f2;
+  border: 0;
+  border-radius: 10px;
+}
+
+.projects-location-info {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.projects-location-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #10834b;
+}
+
+.projects-location-info span {
+  display: block;
+  margin-bottom: 2px;
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  color: #10834b;
+}
+
+.projects-location-info strong {
+  display: block;
+  color: #172b36;
+  font-size: 12px;
+}
+
+.projects-location-context > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: #53665f;
+  font-family: 'Manrope', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.projects-location-context > button:hover {
+  color: #c62828;
+}
+
+
+/* RESULT SUMMARY */
+
+.projects-result-summary {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 0 8px 2px;
+  color: #7a8982;
+  font-size: 10px;
+}
+
+.projects-result-summary strong {
+  color: #172b36;
+  font-size: 11px;
+}
+
+.projects-result-location {
+  color: #10834b;
+  font-weight: 700;
+}
+
+
+/* DISABLED DISTRICT */
+
+.projects-page-container .filter-group select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+
+/* EMPTY TABLE */
+
+.projects-page-container
+  .custom-table
+  tbody
+  tr:has(td[colspan]) {
+  cursor: default;
+}
+
+.projects-page-container
+  .custom-table
+  tbody
+  tr:has(td[colspan]):hover {
+  background: transparent;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 700px) {
+  .projects-location-context {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .projects-location-context > button {
+    padding-left: 39px;
+  }
+
+  .projects-result-summary {
+    flex-wrap: wrap;
+  }
+}

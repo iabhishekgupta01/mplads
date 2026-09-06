@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { AlertTriangle, Eye, Search } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { formatCurrency } from '../utils/formatters.js'
-
+import '../styles/payments.css'
 export function Payments() {
   const { payments, projects, vendors, openPayment } = useApp()
   const [searchQuery, setSearchQuery] = useState('')

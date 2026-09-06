@@ -9,6 +9,7 @@ import {
 } from '../data/mockData.js'
 import { pathFromView, viewFromPath } from '../routes/pathRoutes.js'
 import { riskLabel } from '../utils/formatters.js'
+import { calculateProjectRisk } from '../services/riskEngine.jsx';
 
 const AppContext = createContext(null)
 
@@ -71,14 +72,28 @@ export function AppProvider({ children }) {
   )
 
   const [query, setQuery] = useState('')
-  const [riskFilter, setRiskFilter] = useState('All')
-  const [modal, setModal] = useState(null)
-  const [toast, setToast] = useState('')
-  const [mobileNav, setMobileNav] = useState(false)
+const [riskFilter, setRiskFilter] = useState('All')
+
+const [gisStateFilter, setGisStateFilter] = useState('All')
+const [gisDistrictFilter, setGisDistrictFilter] = useState('All')
+
+const [modal, setModal] = useState(null)
+const [toast, setToast] = useState('')
+const [mobileNav, setMobileNav] = useState(false)
 
   const selected = useMemo(() => {
-    return projects.find((project) => project.id === selectedId) || projects[0]
-  }, [projects, selectedId])
+  return projects.find((project) => project.id === selectedId) || projects[0]
+}, [projects, selectedId])
+
+const selectedRisk = useMemo(() => {
+  if (!selected) return null
+
+  return calculateProjectRisk(selected, {
+    projects,
+    payments,
+    vendors,
+  })
+}, [selected, projects, payments, vendors])
 
   const filteredProjects = useMemo(() => {
     return projects.filter(
@@ -283,6 +298,7 @@ export function AppProvider({ children }) {
     selectedId,
     setSelectedId,
     selected,
+    selectedRisk,
     activeVendorId,
     setActiveVendorId,
     activePaymentId,
@@ -293,6 +309,10 @@ export function AppProvider({ children }) {
     setQuery,
     riskFilter,
     setRiskFilter,
+    gisStateFilter,
+setGisStateFilter,
+gisDistrictFilter,
+setGisDistrictFilter,
     modal,
     setModal,
     toast,
