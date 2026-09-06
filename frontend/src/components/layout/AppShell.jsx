@@ -1,0 +1,6 @@
+import { Bell, ChevronDown, Menu, Search } from 'lucide-react'
+import { Sidebar } from './Sidebar.jsx'
+
+export default function AppShell({ view, navigate, mobileNav, setMobileNav, query, setQuery, children }) {
+  return <div className="app-shell"><Sidebar view={view} navigate={navigate} mobileNav={mobileNav} setMobileNav={setMobileNav} /><div className="app-main"><header className="topbar"><div className="topbar-left"><button className="icon-button mobile-menu" onClick={() => setMobileNav(true)} aria-label="Open navigation"><Menu size={20} /></button><div className="crumb">MPLADS / <strong>{view === 'detail' ? 'Project Investigation' : view[0].toUpperCase() + view.slice(1)}</strong></div></div><div className="global-search"><Search size={17} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search projects, districts, MPs..." /></div><div className="topbar-actions"><span className="live"><i /> Live data <small>Updated 2 min ago</small></span><button className="icon-button notification" aria-label="Notifications"><Bell size={18} /><b>3</b></button><div className="user-chip"><span>SN</span><div><strong>State Nodal Officer</strong><small>Madhya Pradesh</small></div><ChevronDown size={15} /></div></div></header><main className="page-content">{children}</main></div></div>
+}
