@@ -1,994 +1,499 @@
+import { useMemo } from 'react'
 import {
   AlertTriangle,
-  ArrowUpRight,
-  Brain,
-  CheckCircle2,
-  Clock,
-  FolderKanban,
-  ShieldAlert,
+  ArrowRight,
+  BadgeCheck,
+  BarChart3,
+  BrainCircuit,
+  ClipboardCheck,
+  Database,
+  Eye,
+  GitCompare,
+  MapPinned,
+  Network,
+  ShieldCheck,
+  Sparkles,
   TrendingUp,
 } from 'lucide-react'
-import {
-  Bar,
-  BarChart,
-  Cell,
-  Line,
-  LineChart,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
-import { useMemo } from 'react'
 import { useApp } from '../context/AppContext.jsx'
-import { calculateAllProjectRisks } from '../services/riskEngine.jsx'
+import { formatCurrency } from '../utils/formatters.js'
+import '../styles/nirikshan.css'
 
-export function Dashboard() {
-  const {
-    openProject,
-    navigate,
-    setRiskFilter,
-    projects,
-    payments,
-    vendors,
-  } = useApp()
+export default function Dashboard() {
+  const { projects, payments, inspections, vendors, openProject, navigate } = useApp()
 
-  /*
-   * ============================================================
-   * AI RISK INTELLIGENCE
-   * ============================================================
-   *
-   * We calculate project-level risk using the central Risk Engine.
-   * The national KPI numbers below remain the existing prototype
-   * values because they represent the larger MPLADS monitoring
-   * universe, while the local mock project dataset is only a
-   * demonstration subset.
-   */
+  const priority = useMemo(
+    () => [...projects].filter((p) => p.score >= 60).sort((a, b) => b.score - a.score),
+    [projects]
+  )
+  const critical = projects.filter((p) => p.score >= 80)
+  const flaggedPayments = payments.filter((p) => p.flagged)
+  const pendingInspections = inspections.filter(
+    (i) => i.status === 'Pending' || i.status === 'Scheduled'
+  )
 
-  const aiRiskProjects = useMemo(() => {
-    return calculateAllProjectRisks(projects || [], {
-      payments: payments || [],
-      vendors: vendors || [],
+  // Demo project — Community Hall / Road Construction Sehore
+  const sehore = projects.find((p) => p.id === 'MP-2024-1001') || projects[0]
+
+  const riskDistribution = useMemo(() => {
+    const high = projects.filter((p) => p.score >= 70).length
+    const medium = projects.filter((p) => p.score >= 40 && p.score < 70).length
+    const low = projects.filter((p) => p.score < 40).length
+    return { high, medium, low }
+  }, [projects])
+
+  const stateRisks = useMemo(() => {
+    const stateMap = {}
+    projects.forEach((p) => {
+      if (!stateMap[p.state]) stateMap[p.state] = { total: 0, highRisk: 0, totalAmt: 0 }
+      stateMap[p.state].total++
+      stateMap[p.state].totalAmt += p.amount
+      if (p.score >= 60) stateMap[p.state].highRisk++
     })
-  }, [projects, payments, vendors])
-
-  const aiRiskStats = useMemo(() => {
-    const critical = aiRiskProjects.filter(
-      (project) => project.aiRisk?.riskLevel === 'CRITICAL'
-    )
-
-    const high = aiRiskProjects.filter(
-      (project) => project.aiRisk?.riskLevel === 'HIGH'
-    )
-
-    const medium = aiRiskProjects.filter(
-      (project) => project.aiRisk?.riskLevel === 'MEDIUM'
-    )
-
-    const low = aiRiskProjects.filter(
-      (project) => project.aiRisk?.riskLevel === 'LOW'
-    )
-
-    const priorityProjects = [...aiRiskProjects]
-      .sort(
-        (a, b) =>
-          (b.aiRisk?.score || 0) - (a.aiRisk?.score || 0)
-      )
-      .slice(0, 5)
-
-    const signalCounts = {}
-
-    aiRiskProjects.forEach((project) => {
-      project.aiRisk?.activeSignals?.forEach((signal) => {
-        signalCounts[signal.name] =
-          (signalCounts[signal.name] || 0) + 1
-      })
-    })
-
-    const topSignals = Object.entries(signalCounts)
-      .map(([name, count]) => ({
-        name,
-        count,
-      }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 4)
-
-    return {
-      critical,
-      high,
-      medium,
-      low,
-      priorityProjects,
-      topSignals,
-      totalFlagged:
-        critical.length + high.length + medium.length,
-    }
-  }, [aiRiskProjects])
-
-  // Existing dashboard data
-  const statusData = [
-    { name: 'Ongoing', value: 620, pct: '49.7%', color: '#2563eb' },
-    { name: 'Completed', value: 480, pct: '38.5%', color: '#16a34a' },
-    { name: 'Delayed', value: 98, pct: '7.9%', color: '#f59e0b' },
-    { name: 'Not Started', value: 50, pct: '4.0%', color: '#94a3b8' },
-  ]
-
-  const riskData = [
-    { name: 'High Risk', value: 50, pct: '4.0%', color: '#dc2626' },
-    { name: 'Medium Risk', value: 82, pct: '6.6%', color: '#d97706' },
-    { name: 'Low Risk', value: 1116, pct: '89.4%', color: '#16a34a' },
-  ]
-
-  const districtData = [
-    { district: 'Bhopal', count: 142 },
-    { district: 'Indore', count: 128 },
-    { district: 'Gwalior', count: 115 },
-    { district: 'Jabalpur', count: 110 },
-    { district: 'Ujjain', count: 95 },
-  ]
-
-  const trendData = [
-    { month: 'Jan', exp: 12 },
-    { month: 'Feb', exp: 15 },
-    { month: 'Mar', exp: 18 },
-    { month: 'Apr', exp: 20 },
-    { month: 'May', exp: 13 },
-    { month: 'Jun', exp: 14 },
-  ]
-
-  const handleStatusClick = () => {
-    navigate('projects')
-  }
-
-  const handleRiskClick = (riskLevel) => {
-    setRiskFilter(riskLevel)
-    navigate('projects')
-  }
+    return Object.entries(stateMap)
+      .map(([state, data]) => ({ state, ...data }))
+      .sort((a, b) => b.highRisk - a.highRisk)
+  }, [projects])
 
   return (
-    <div className="dashboard-container">
+    <div className="nir-page">
 
-      {/* ========================================================
-          EXISTING KPI CARDS
-          ======================================================== */}
-
-      <div className="kpi-5-grid">
-
-        <div
-          className="kpi-card"
-          onClick={() => navigate('projects')}
-        >
-          <div className="kpi-card-top">
-            <span className="kpi-label">Total Projects</span>
-            <div className="kpi-icon-box blue">
-              <FolderKanban size={18} />
-            </div>
-          </div>
-
-          <div className="kpi-value">1,248</div>
-          <div className="kpi-meta">+12 this month</div>
+      {/* ====== COMMAND HERO ====== */}
+      <section className="nir-command-hero">
+        <div>
+          <span className="nir-eyebrow">
+            <Sparkles size={13} /> NIRIKSHAN · NATIONAL RISK INTELLIGENCE LAYER
+          </span>
+          <h1>
+            From monitoring data to <em>verified action.</em>
+          </h1>
+          <p>
+            NIRIKSHAN connects financial, execution, payment, spatial and field
+            signals into explainable priorities for MPLADS monitoring
+            authorities. AI assists detection — human officers determine action.
+          </p>
         </div>
-
-        <div
-          className="kpi-card"
-          onClick={() => navigate('projects')}
-        >
-          <div className="kpi-card-top">
-            <span className="kpi-label">Ongoing Projects</span>
-            <div className="kpi-icon-box green">
-              <TrendingUp size={18} />
-            </div>
-          </div>
-
-          <div className="kpi-value">620</div>
-          <div className="kpi-meta">+8 this month</div>
+        <div className="nir-hero-action">
+          <span>DEMO CASE READY</span>
+          <strong>{sehore?.name || 'Road Construction — Sehore'}</strong>
+          <small style={{ color: '#c6d6d6', fontSize: 11, marginBottom: 4 }}>
+            {sehore?.score}/100 HIGH · Financial-progress mismatch + payment anomaly
+          </small>
+          <button onClick={() => openProject(sehore?.id)}>
+            Investigate high-risk case <ArrowRight size={16} />
+          </button>
         </div>
+      </section>
 
-        <div
-          className="kpi-card"
-          onClick={() => navigate('projects')}
-        >
-          <div className="kpi-card-top">
-            <span className="kpi-label">Completed Projects</span>
-            <div className="kpi-icon-box teal">
-              <CheckCircle2 size={18} />
-            </div>
-          </div>
-
-          <div className="kpi-value">480</div>
-          <div className="kpi-meta">+15 this month</div>
-        </div>
-
-        <div
-          className="kpi-card"
-          onClick={() => navigate('projects')}
-        >
-          <div className="kpi-card-top">
-            <span className="kpi-label">Delayed Projects</span>
-            <div className="kpi-icon-box amber">
-              <Clock size={18} />
-            </div>
-          </div>
-
-          <div className="kpi-value">98</div>
-          <div className="kpi-meta amber">+5 this month</div>
-        </div>
-
-        <div
-          className="kpi-card"
-          onClick={() => handleRiskClick('High')}
-        >
-          <div className="kpi-card-top">
-            <span className="kpi-label">High Risk Projects</span>
-            <div className="kpi-icon-box red">
-              <AlertTriangle size={18} />
-            </div>
-          </div>
-
-          <div
-            className="kpi-value"
-            style={{ color: '#dc2626' }}
+      {/* ====== DECISION FLOW ====== */}
+      <section className="nir-flow" aria-label="NIRIKSHAN decision flow">
+        {[
+          ['01', 'DATA', Database, 'data'],
+          ['02', 'DETECT', AlertTriangle, 'alerts'],
+          ['03', 'CONNECT', Network, 'connected'],
+          ['04', 'PRIORITIZE', BrainCircuit, 'alerts'],
+          ['05', 'VERIFY', Eye, 'verification'],
+          ['06', 'ACT & AUDIT', ShieldCheck, 'compliance'],
+        ].map(([n, label, Icon, target], i) => (
+          <button
+            className="nir-flow-step"
+            key={label}
+            onClick={() => navigate(target)}
+            title={`Go to ${label}`}
           >
-            50
-          </div>
+            <span>{n}</span>
+            <Icon size={18} />
+            <strong>{label}</strong>
+            {i < 5 && <i>→</i>}
+          </button>
+        ))}
+      </section>
 
-          <div className="kpi-meta red">
-            +7 this month
-          </div>
-        </div>
+      {/* ====== KPI GRID ====== */}
+      <section className="nir-kpis">
+        <Metric
+          label="AI priority cases"
+          value={priority.length}
+          note={`Risk score 60+ · needs review`}
+          tone="red"
+          onClick={() => navigate('alerts')}
+        />
+        <Metric
+          label="Critical risk signals"
+          value={critical.length}
+          note="Score 80+ · immediate investigation"
+          tone="amber"
+          onClick={() => navigate('alerts')}
+        />
+        <Metric
+          label="Payment patterns flagged"
+          value={flaggedPayments.length}
+          note={`${formatCurrency(flaggedPayments.reduce((s, p) => s + p.amount, 0))} exposed`}
+          tone="blue"
+          onClick={() => navigate('payments')}
+        />
+        <Metric
+          label="Field verifications"
+          value={pendingInspections.length}
+          note="Awaiting ground evidence check"
+          tone="green"
+          onClick={() => navigate('inspections')}
+        />
+      </section>
 
-      </div>
-
-      {/* ========================================================
-          NEW: AI RISK INTELLIGENCE
-          ======================================================== */}
-
-      <div className="ai-command-panel">
-
-        <div className="ai-command-header">
-
-          <div className="ai-command-title">
-
-            <div className="ai-command-icon">
-              <Brain size={18} />
-            </div>
-
+      {/* ====== MAIN GRID: PRIORITY QUEUE + RISK FINGERPRINT ====== */}
+      <section className="nir-grid-main">
+        {/* LEFT: AI Priority Queue */}
+        <article className="nir-panel nir-priority-panel">
+          <div className="nir-panel-head">
             <div>
-              <div className="ai-command-eyebrow">
-                AI RISK INTELLIGENCE
-              </div>
+              <span className="nir-eyebrow">AI PRIORITY QUEUE</span>
+              <h2>What needs attention now</h2>
+            </div>
+            <button className="nir-link" onClick={() => navigate('alerts')}>
+              Open full queue <ArrowRight size={14} />
+            </button>
+          </div>
+          <p className="nir-subtext">
+            Ranked by cross-signal risk analysis. AI findings require human verification before action.
+          </p>
+          <div className="nir-priority-list">
+            {priority.slice(0, 5).map((p, index) => (
+              <button
+                className="nir-priority-row"
+                key={p.id}
+                onClick={() => openProject(p.id)}
+              >
+                <b className="nir-rank">0{index + 1}</b>
+                <div>
+                  <strong>{p.name}</strong>
+                  <span>
+                    {p.id} · {p.district}, {p.state}
+                  </span>
+                </div>
+                <div className="nir-signal">
+                  <span>{p.finding}</span>
+                  <small>
+                    {p.expenditure}% spent · {p.physical}% physical
+                  </small>
+                </div>
+                <b className={`nir-score ${p.score >= 80 ? 'critical' : ''}`}>
+                  {p.score}
+                  <small>/100</small>
+                </b>
+                <ArrowRight size={16} />
+              </button>
+            ))}
+          </div>
+        </article>
 
-              <h2>
-                National Monitoring Priority
-              </h2>
-
+        {/* RIGHT: Demo Case Risk Fingerprint */}
+        <article className="nir-panel nir-case-snapshot">
+          <div className="nir-panel-head">
+            <div>
+              <span className="nir-eyebrow">
+                RISK FINGERPRINT · DEMO CASE
+              </span>
+              <h2>Why {sehore?.district || 'Sehore'} is flagged</h2>
+            </div>
+            <span className="nir-pill critical">{sehore?.score} / 100 HIGH</span>
+          </div>
+          <div className="nir-fingerprint-summary">
+            <div className="nir-ring">
+              <strong>{sehore?.score || 82}</strong>
+              <small>RISK</small>
+            </div>
+            <div>
+              <strong>Multiple independent signals detected</strong>
               <p>
-                AI-generated risk signals requiring
-                administrative attention.
+                Financial-physical mismatch, clustered payment pattern, schedule
+                delay and nearby related work converge into a high-confidence
+                risk assessment.
               </p>
             </div>
-
           </div>
-
+          <div className="nir-driver-bars">
+            <Driver label="Financial vs physical mismatch" value={45} />
+            <Driver label="Clustered payment anomaly (3×₹5L)" value={24} />
+            <Driver label="Schedule delay ({sehore?.delay || '4 months'})" value={18} />
+            <Driver label="Vendor risk signal" value={8} />
+            <Driver label="Nearby related work" value={5} />
+          </div>
           <button
-            className="text-btn"
-            onClick={() => navigate('alerts')}
+            className="nir-primary wide"
+            onClick={() => openProject(sehore?.id)}
           >
-            View Risk Center
-            <ArrowUpRight size={14} />
+            Review evidence & recommended action <ArrowRight size={16} />
           </button>
+        </article>
+      </section>
 
-        </div>
-
-        <div className="ai-command-stats">
-
-          <div
-            className="ai-command-stat critical"
-            onClick={() => handleRiskClick('High')}
-          >
-            <div className="ai-stat-icon">
-              <ShieldAlert size={16} />
+      {/* ====== BOTTOM GRID ====== */}
+      <section className="nir-grid-bottom" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+        {/* Connected Risk Intelligence */}
+        <article className="nir-panel" style={{ cursor: 'pointer' }} onClick={() => navigate('connected')}>
+          <span className="nir-eyebrow">
+            <Network size={12} /> CONNECTED RISK INTELLIGENCE
+          </span>
+          <h2>One project is not an isolated record</h2>
+          <div className="nir-network">
+            <div className="node active">
+              {sehore?.name?.split(' ').slice(0, 2).join(' ') || 'Road Construction'}
+              <br />
+              <small>Sehore · {sehore?.score || 82}</small>
             </div>
-
-            <div>
-              <span>Critical</span>
-              <strong>{aiRiskStats.critical.length}</strong>
+            <span>↔</span>
+            <div className="node">
+              ABC Infrastructure
+              <br />
+              <small>Vendor risk: 86</small>
             </div>
-          </div>
-
-          <div
-            className="ai-command-stat high"
-            onClick={() => handleRiskClick('High')}
-          >
-            <div className="ai-stat-icon">
-              <AlertTriangle size={16} />
-            </div>
-
-            <div>
-              <span>High Risk</span>
-              <strong>{aiRiskStats.high.length}</strong>
+            <span>↔</span>
+            <div className="node">
+              Village Road
+              <br />
+              <small>Related · 76</small>
             </div>
           </div>
+          <p className="nir-subtext">
+            <MapPinned size={14} /> Same contractor, same work category, nearby
+            GPS coordinates — a reviewable relationship signal.
+          </p>
+          <button className="nir-link" onClick={(e) => { e.stopPropagation(); navigate('connected') }}>
+            Investigate connections <ArrowRight size={14} />
+          </button>
+        </article>
 
-          <div className="ai-command-stat medium">
-            <div className="ai-stat-icon">
-              <TrendingUp size={16} />
-            </div>
-
+        {/* Evidence & Governance */}
+        <article className="nir-panel">
+          <span className="nir-eyebrow">
+            <ClipboardCheck size={12} /> EVIDENCE & GOVERNANCE
+          </span>
+          <h2>Verification closes the loop</h2>
+          <div className="nir-verify-mini">
             <div>
-              <span>Medium Risk</span>
-              <strong>{aiRiskStats.medium.length}</strong>
+              <small>REPORTED</small>
+              <strong>{sehore?.physical || 40}%</strong>
+              <span>physical progress</span>
+            </div>
+            <b>vs</b>
+            <div>
+              <small>EVIDENCE-SUPPORTED</small>
+              <strong style={{ color: '#b44b38' }}>31%</strong>
+              <span>field evidence estimate</span>
             </div>
           </div>
-
-          <div className="ai-command-stat flagged">
-            <div className="ai-stat-icon">
-              <Brain size={16} />
-            </div>
-
-            <div>
-              <span>AI Signals</span>
-              <strong>{aiRiskStats.totalFlagged}</strong>
-            </div>
+          <div className="nir-status-line">
+            <ClipboardCheck size={16} />
+            <span>
+              GPS matched · Timestamp verified · Image requires review
+            </span>
           </div>
+          <button className="nir-link" onClick={() => navigate('verification')}>
+            Open verification workspace <ArrowRight size={14} />
+          </button>
+        </article>
 
-        </div>
-
-        <div className="ai-command-body">
-
-          {/* Priority queue */}
-
-          <div className="ai-priority-section">
-
-            <div className="ai-section-heading">
+        {/* Strategic Analytics Bridge */}
+        <article className="nir-panel">
+          <span className="nir-eyebrow">
+            <BarChart3 size={12} /> PROGRAM ANALYTICS
+          </span>
+          <h2>Strategic risk patterns</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '14px 0' }}>
+            <div className="nir-driver">
               <div>
-                <strong>Investigation Priority Queue</strong>
-                <span>
-                  Highest-risk projects identified by the
-                  current intelligence engine
-                </span>
+                <span>Critical Risk (70+)</span>
+                <b style={{ color: '#ae4438' }}>{riskDistribution.high}</b>
               </div>
-
-              <span className="ai-live-badge">
-                LIVE ANALYSIS
-              </span>
+              <i>
+                <em
+                  style={{
+                    width: `${(riskDistribution.high / projects.length) * 100}%`,
+                    background: '#dc4a38',
+                  }}
+                />
+              </i>
             </div>
-
-            <div className="ai-priority-list">
-
-              {aiRiskStats.priorityProjects.length === 0 && (
-                <div className="ai-no-data">
-                  No project risk data available.
-                </div>
-              )}
-
-              {aiRiskStats.priorityProjects.map(
-                (project, index) => (
-                  <div
-                    className="ai-priority-row"
-                    key={project.id}
-                    onClick={() => openProject(project.id)}
-                  >
-
-                    <div className="ai-priority-rank">
-                      {index + 1}
-                    </div>
-
-                    <div className="ai-priority-project">
-
-                      <strong>{project.name}</strong>
-
-                      <span>
-                        {project.id} • {project.district}
-                      </span>
-
-                    </div>
-
-                    <div className="ai-priority-signal">
-
-                      <span>
-                        {project.aiRisk?.strongestSignals?.[0]
-                          ?.name || 'Risk assessment'}
-                      </span>
-
-                      <small>
-                        {project.aiRisk?.activeSignals
-                          ?.length || 0}{' '}
-                        signal
-                        {(project.aiRisk?.activeSignals
-                          ?.length || 0) === 1
-                          ? ''
-                          : 's'}
-                      </small>
-
-                    </div>
-
-                    <div className="ai-priority-score">
-
-                      <strong>
-                        {project.aiRisk?.score || 0}
-                      </strong>
-
-                      <span>
-                        {project.aiRisk?.riskLevel || 'LOW'}
-                      </span>
-
-                    </div>
-
-                    <ArrowUpRight
-                      size={14}
-                      className="ai-row-arrow"
-                    />
-
-                  </div>
-                )
-              )}
-
-            </div>
-          </div>
-
-          {/* Signal summary */}
-
-          <div className="ai-signal-section">
-
-            <div className="ai-section-heading">
+            <div className="nir-driver">
               <div>
-                <strong>Top Risk Signals</strong>
-                <span>
-                  Patterns detected across monitored projects
-                </span>
+                <span>Elevated Risk (40–69)</span>
+                <b style={{ color: '#b77b1e' }}>{riskDistribution.medium}</b>
               </div>
+              <i>
+                <em
+                  style={{
+                    width: `${(riskDistribution.medium / projects.length) * 100}%`,
+                    background: '#d9890f',
+                  }}
+                />
+              </i>
             </div>
+            <div className="nir-driver">
+              <div>
+                <span>Normal (&lt;40)</span>
+                <b style={{ color: '#2a8a6e' }}>{riskDistribution.low}</b>
+              </div>
+              <i>
+                <em
+                  style={{
+                    width: `${(riskDistribution.low / projects.length) * 100}%`,
+                    background: '#65a98f',
+                  }}
+                />
+              </i>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <button className="nir-link" onClick={() => navigate('analytics')}>
+              <TrendingUp size={13} /> Risk Analytics <ArrowRight size={12} />
+            </button>
+            <button className="nir-link" onClick={() => navigate('map')}>
+              <MapPinned size={13} /> Spatial Map <ArrowRight size={12} />
+            </button>
+            <button className="nir-link" onClick={() => navigate('duplicates')}>
+              <GitCompare size={13} /> Similar Works <ArrowRight size={12} />
+            </button>
+          </div>
+        </article>
+      </section>
 
-            <div className="ai-signal-list">
-
-              {aiRiskStats.topSignals.map(
-                (signal, index) => (
-                  <div
-                    className="ai-signal-row"
-                    key={signal.name}
-                  >
-
-                    <div className="ai-signal-number">
-                      {index + 1}
+      {/* ====== STATE RISK TABLE ====== */}
+      <section className="nir-panel" style={{ marginTop: 17 }}>
+        <div className="nir-panel-head">
+          <div>
+            <span className="nir-eyebrow">REGIONAL RISK CONCENTRATION</span>
+            <h2>State-level vulnerability overview</h2>
+          </div>
+          <button className="nir-link" onClick={() => navigate('map')}>
+            View spatial map <ArrowRight size={14} />
+          </button>
+        </div>
+        <div style={{ overflowX: 'auto', marginTop: 14 }}>
+          <table className="nir-table">
+            <thead>
+              <tr>
+                <th>STATE</th>
+                <th>PROJECTS</th>
+                <th>HIGH RISK (60+)</th>
+                <th>SANCTIONED VALUE</th>
+                <th>RISK DENSITY</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stateRisks.map((s) => (
+                <tr key={s.state} className="nir-table-row-hover" style={{ cursor: 'pointer' }} onClick={() => navigate('analytics')}>
+                  <td style={{ fontWeight: 700 }}>{s.state}</td>
+                  <td>{s.total}</td>
+                  <td>
+                    <span
+                      style={{
+                        background: s.highRisk > 0 ? '#f9e9e5' : '#e9f5ef',
+                        color: s.highRisk > 0 ? '#9b3e31' : '#216454',
+                        padding: '3px 7px',
+                        borderRadius: 4,
+                        fontWeight: 700,
+                        fontSize: 11,
+                      }}
+                    >
+                      {s.highRisk}
+                    </span>
+                  </td>
+                  <td>{formatCurrency(s.totalAmt)}</td>
+                  <td>
+                    <div style={{ height: 6, background: '#edf1ef', borderRadius: 3, width: 100 }}>
+                      <div
+                        style={{
+                          height: '100%',
+                          width: `${s.total > 0 ? (s.highRisk / s.total) * 100 : 0}%`,
+                          background: s.highRisk / s.total >= 0.5 ? '#dc4a38' : '#d9890f',
+                          borderRadius: 3,
+                        }}
+                      />
                     </div>
-
-                    <div className="ai-signal-name">
-                      <strong>{signal.name}</strong>
-
-                      <div className="ai-signal-track">
-                        <div
-                          className="ai-signal-fill"
-                          style={{
-                            width: `${Math.min(
-                              100,
-                              signal.count * 20
-                            )}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <strong className="ai-signal-count">
-                      {signal.count}
-                    </strong>
-
-                  </div>
-                )
-              )}
-
-              {aiRiskStats.topSignals.length === 0 && (
-                <div className="ai-no-data">
-                  Risk signals will appear as project data
-                  is analyzed.
-                </div>
-              )}
-
-            </div>
-
-          </div>
-
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </div>
+      </section>
 
-      {/* ========================================================
-          EXISTING ROW 2
-          ======================================================== */}
-
-      <div className="dashboard-grid-3">
-
-        {/* Projects by Status */}
-
-        <div className="panel">
-
-          <div className="panel-head">
-            <h2>Projects by Status</h2>
-          </div>
-
-          <div className="chart-container-center">
-
-            <ResponsiveContainer
-              width="100%"
-              height={160}
-            >
-              <PieChart>
-
-                <Pie
-                  data={statusData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={70}
-                  dataKey="value"
-                  onClick={handleStatusClick}
-                  style={{ cursor: 'pointer' }}
-                >
-                  {statusData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={entry.color}
-                    />
-                  ))}
-                </Pie>
-
-              </PieChart>
-            </ResponsiveContainer>
-
-            <div className="donut-center-text">
-              <strong>1,248</strong>
-              <span>Total</span>
-            </div>
-
-          </div>
-
-          <div className="chart-legend-list">
-
-            {statusData.map((item) => (
-              <div
-                key={item.name}
-                className="legend-item"
-                onClick={handleStatusClick}
-                style={{ cursor: 'pointer' }}
-              >
-
-                <div className="legend-left">
-
-                  <i
-                    className="legend-dot"
-                    style={{
-                      backgroundColor: item.color,
-                    }}
-                  />
-
-                  <span>{item.name}</span>
-
-                </div>
-
-                <div className="legend-val">
-                  {item.value} ({item.pct})
-                </div>
-
-              </div>
-            ))}
-
-          </div>
-
+      {/* ====== LIVE ACTIVITY TICKER ====== */}
+      <section className="nir-panel" style={{ marginTop: 17 }}>
+        <div className="nir-panel-head">
+          <span className="nir-eyebrow">LIVE THREAT STREAM</span>
+          <span className="nir-muted-badge" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#2a8a6e', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
+            Live
+          </span>
         </div>
-
-        {/* Fund Utilization */}
-
-        <div className="panel">
-
-          <div className="panel-head">
-            <h2>Fund Utilization</h2>
-          </div>
-
-          <div className="fund-summary-box">
-
-            <div className="fund-circle-wrap">
-
-              <div className="fund-circle-inner">
-                <strong>83.6%</strong>
-                <span>Utilization</span>
-              </div>
-
-            </div>
-
-            <div className="fund-metrics-list">
-
-              <div className="fund-metric-row">
-                <span>Sanctioned Amount</span>
-                <strong>₹ 120.00 Cr</strong>
-              </div>
-
-              <div className="fund-metric-row">
-                <span>Released Amount</span>
-                <strong>₹ 110.00 Cr</strong>
-              </div>
-
-              <div className="fund-metric-row">
-                <span>Expenditure</span>
-                <strong style={{ color: '#16a34a' }}>
-                  ₹ 92.00 Cr
-                </strong>
-              </div>
-
-              <div className="fund-metric-row">
-                <span>Balance Amount</span>
-                <strong style={{ color: '#d97706' }}>
-                  ₹ 18.00 Cr
-                </strong>
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* Risk Distribution */}
-
-        <div className="panel">
-
-          <div className="panel-head">
-            <h2>Risk Distribution</h2>
-          </div>
-
-          <div className="chart-container-center">
-
-            <ResponsiveContainer
-              width="100%"
-              height={160}
-            >
-              <PieChart>
-
-                <Pie
-                  data={riskData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={70}
-                  dataKey="value"
-                  style={{ cursor: 'pointer' }}
-                >
-                  {riskData.map((entry, index) => (
-                    <Cell
-                      key={`risk-cell-${index}`}
-                      fill={entry.color}
-                      onClick={() =>
-                        handleRiskClick(
-                          entry.name.split(' ')[0]
-                        )
-                      }
-                    />
-                  ))}
-                </Pie>
-
-              </PieChart>
-
-            </ResponsiveContainer>
-
-          </div>
-
-          <div className="chart-legend-list">
-
-            {riskData.map((item) => (
-              <div
-                key={item.name}
-                className="legend-item"
-                onClick={() =>
-                  handleRiskClick(
-                    item.name.split(' ')[0]
-                  )
-                }
-                style={{ cursor: 'pointer' }}
-              >
-
-                <div className="legend-left">
-
-                  <i
-                    className="legend-dot"
-                    style={{
-                      backgroundColor: item.color,
-                    }}
-                  />
-
-                  <span>{item.name}</span>
-
-                </div>
-
-                <div className="legend-val">
-                  {item.value} ({item.pct})
-                </div>
-
-              </div>
-            ))}
-
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* ========================================================
-          EXISTING ROW 3
-          ======================================================== */}
-
-      <div className="dashboard-grid-3">
-
-        {/* Projects by District */}
-
-        <div className="panel">
-
-          <div className="panel-head">
-            <h2>Projects by District (Top 5)</h2>
-          </div>
-
-          <ResponsiveContainer
-            width="100%"
-            height={210}
-          >
-            <BarChart
-              data={districtData}
-              margin={{
-                top: 10,
-                right: 10,
-                left: -20,
-                bottom: 0,
-              }}
-            >
-
-              <XAxis
-                dataKey="district"
-                axisLine={false}
-                tickLine={false}
-                tick={{
-                  fontSize: 11,
-                  fill: '#64748b',
-                }}
-              />
-
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                tick={{
-                  fontSize: 11,
-                  fill: '#64748b',
-                }}
-              />
-
-              <Tooltip
-                contentStyle={{
-                  borderRadius: 6,
-                  border: '1px solid #e2e8f0',
-                  fontSize: 12,
-                }}
-              />
-
-              <Bar
-                dataKey="count"
-                fill="#2563eb"
-                radius={[4, 4, 0, 0]}
-                barSize={24}
-                onClick={() => navigate('projects')}
-                style={{ cursor: 'pointer' }}
-              />
-
-            </BarChart>
-
-          </ResponsiveContainer>
-
-        </div>
-
-        {/* Expenditure Trend */}
-
-        <div className="panel">
-
-          <div className="panel-head">
-            <h2>
-              Expenditure Trend (Last 6 Months)
-            </h2>
-          </div>
-
-          <ResponsiveContainer
-            width="100%"
-            height={210}
-          >
-
-            <LineChart
-              data={trendData}
-              margin={{
-                top: 10,
-                right: 10,
-                left: -20,
-                bottom: 0,
-              }}
-            >
-
-              <XAxis
-                dataKey="month"
-                axisLine={false}
-                tickLine={false}
-                tick={{
-                  fontSize: 11,
-                  fill: '#64748b',
-                }}
-              />
-
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                tick={{
-                  fontSize: 11,
-                  fill: '#64748b',
-                }}
-              />
-
-              <Tooltip
-                contentStyle={{
-                  borderRadius: 6,
-                  border: '1px solid #e2e8f0',
-                  fontSize: 12,
-                }}
-                formatter={(val) => [
-                  `₹ ${val} Cr`,
-                  'Expenditure',
-                ]}
-              />
-
-              <Line
-                type="monotone"
-                dataKey="exp"
-                stroke="#0d9488"
-                strokeWidth={2.5}
-                dot={{
-                  r: 4,
-                  fill: '#0d9488',
-                }}
-              />
-
-            </LineChart>
-
-          </ResponsiveContainer>
-
-        </div>
-
-        {/* Recent Alerts */}
-
-        <div className="panel">
-
-          <div className="panel-head">
-            <h2>Recent Alerts</h2>
-          </div>
-
-          <div className="recent-alerts-list">
-
+        <div style={{ display: 'flex', gap: 12, marginTop: 12, flexWrap: 'wrap' }}>
+          {[
+            { text: 'AI risk score updated: Road Construction Sehore 68 → 82', time: '2 min ago', tone: 'ai' },
+            { text: '3 identical ₹5L payments flagged on MP-2024-1001', time: '15 min ago', tone: 'ai' },
+            { text: 'Field inspection INSP-1001 assigned to Anita Sharma', time: '1 hr ago', tone: 'system' },
+            { text: 'Community Hall Indore: risk escalated to 92/100', time: '3 hrs ago', tone: 'ai' },
+          ].map((item, idx) => (
             <div
-              className="alert-item-row"
-              onClick={() =>
-                openProject('MP-2024-1001')
-              }
-            >
-              <div className="alert-bullet-icon red" />
-
-              <div
-                className="alert-item-content"
-                style={{ flex: 1 }}
-              >
-                <strong>
-                  High risk project detected
-                </strong>
-
-                <p>
-                  Road Construction – Sehore
-                </p>
-
-                <div className="alert-item-meta">
-
-                  <span
-                    style={{
-                      color: '#dc2626',
-                      fontWeight: 600,
-                    }}
-                  >
-                    AI assessment available
-                  </span>
-
-                  <span>2 min ago</span>
-
-                </div>
-              </div>
-            </div>
-
-            <div
-              className="alert-item-row"
-              onClick={() =>
-                openProject('MP-2024-1187')
-              }
-            >
-              <div className="alert-bullet-icon amber" />
-
-              <div
-                className="alert-item-content"
-                style={{ flex: 1 }}
-              >
-                <strong>
-                  Delay predicted
-                </strong>
-
-                <p>
-                  Community Hall – Morena
-                </p>
-
-                <div className="alert-item-meta">
-
-                  <span>
-                    Schedule risk signal
-                  </span>
-
-                  <span>15 min ago</span>
-
-                </div>
-              </div>
-            </div>
-
-            <div
-              className="alert-item-row"
-              onClick={() =>
-                openProject('MP-2025-0421')
-              }
-            >
-              <div className="alert-bullet-icon amber" />
-
-              <div
-                className="alert-item-content"
-                style={{ flex: 1 }}
-              >
-                <strong>
-                  Cost overrun risk
-                </strong>
-
-                <p>
-                  Primary Health Centre Upgrade – Bhopal
-                </p>
-
-                <div className="alert-item-meta">
-
-                  <span>
-                    Financial execution signal
-                  </span>
-
-                  <span>1 hr ago</span>
-
-                </div>
-              </div>
-            </div>
-
-            <div
+              key={idx}
               style={{
-                marginTop: 8,
-                textAlign: 'right',
+                flex: '1 1 200px',
+                padding: '10px 14px',
+                background: item.tone === 'ai' ? '#fff8f0' : '#f5f9f7',
+                borderRadius: 8,
+                borderLeft: `3px solid ${item.tone === 'ai' ? '#d97706' : '#65a98f'}`,
+                fontSize: 12,
+                color: '#2d4a44',
               }}
             >
-              <button
-                className="text-btn"
-                onClick={() => navigate('alerts')}
-              >
-                View All Alerts
-                <ArrowUpRight size={14} />
-              </button>
+              <div style={{ fontWeight: 700 }}>{item.text}</div>
+              <div style={{ color: '#8ca59f', marginTop: 3, fontSize: 11 }}>
+                {item.time}
+              </div>
             </div>
-
-          </div>
-
+          ))}
         </div>
+      </section>
 
-      </div>
-
+      {/* ====== GOVERNANCE TRUST ====== */}
+      <section style={{ marginTop: 17, display: 'flex', gap: 12, alignItems: 'center', padding: '14px 20px', background: '#f5f9f7', borderRadius: 10, border: '1px solid #dce7e3' }}>
+        <BadgeCheck size={22} style={{ color: '#2a8a6e', flexShrink: 0 }} />
+        <div>
+          <strong style={{ fontSize: 13, color: '#1b3c43', display: 'block' }}>Human-in-the-loop governance</strong>
+          <span style={{ fontSize: 12, color: '#47635e' }}>
+            NIRIKSHAN is a decision-support tool. Every AI signal requires human verification. 
+            Every officer decision is recorded in the tamper-evident audit trail.
+          </span>
+        </div>
+        <button className="nir-link" style={{ whiteSpace: 'nowrap' }} onClick={() => navigate('compliance')}>
+          View audit ledger <ArrowRight size={13} />
+        </button>
+      </section>
     </div>
   )
 }
 
-export default Dashboard
+function Metric({ label, value, note, tone, onClick }) {
+  return (
+    <article className={`nir-metric ${tone}`} onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <small>{note}</small>
+    </article>
+  )
+}
+
+function Driver({ label, value }) {
+  return (
+    <div className="nir-driver">
+      <div>
+        <span>{label}</span>
+        <b>+{value}</b>
+      </div>
+      <i>
+        <em style={{ width: `${Math.min(100, value * 2)}%` }} />
+      </i>
+    </div>
+  )
+}

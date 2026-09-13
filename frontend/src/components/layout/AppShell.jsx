@@ -29,12 +29,13 @@ export default function AppShell(props) {
   const unreadCount = notifications.filter((n) => n.unread).length
 
   const pageTitleMap = {
-    dashboard: 'Overview Dashboard',
-    projects: 'Projects',
-    detail: 'Project Details',
+    dashboard: 'Risk Command Center',
+    projects: 'Project Intelligence',
+    detail: 'Project Investigation',
     progress: 'Project Progress Update',
-    verification: 'Supervisor Verification',
-    alerts: 'Risk & Alerts Center',
+    verification: 'Evidence Verification',
+    alerts: 'AI Priority Queue',
+    duplicates: 'Similar Work Detection',
     funds: 'Fund Monitoring & Allocation',
     analytics: 'Analytics & Multi-Scope Intelligence',
     field: 'Field Operations',
@@ -48,17 +49,20 @@ export default function AppShell(props) {
     reports: 'Reports & Compliance Archives',
     compliance: 'Compliance & Audit Trail',
     settings: 'System Settings',
+    data: 'Data Intelligence',
+    connected: 'Connected Intelligence',
+    'field-dashboard': 'Field Operations Dashboard',
   }
 
   const title = pageTitleMap[view] || 'Overview Dashboard'
 
   const searchResults = searchQuery.trim()
     ? projects.filter(
-        (p) =>
-          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.district.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      (p) =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.district.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     : []
 
   const handleNotificationClick = (item) => {

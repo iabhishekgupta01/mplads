@@ -1,7 +1,10 @@
 import Alerts from '../pages/Alerts.jsx'
 import AnalyticsCenter from '../pages/AnalyticsCenter.jsx'
 import Compliance from '../pages/Compliance.jsx'
+import ComparisonPage from '../pages/ComparisonPage.jsx'
+import ConnectedIntelligence from '../pages/ConnectedIntelligence.jsx'
 import Dashboard from '../pages/Dashboard.jsx'
+import DataIntelligence from '../pages/DataIntelligence.jsx'
 import FieldDashboard from '../pages/FieldDashboard.jsx'
 import GisPage from '../pages/GisPage.jsx'
 import InspectionDetail from '../pages/InspectionDetail.jsx'
@@ -16,6 +19,7 @@ import SecondaryPage from '../pages/SecondaryPage.jsx'
 import VendorDetail from '../pages/VendorDetail.jsx'
 import Vendors from '../pages/Vendors.jsx'
 import VerificationPage from '../pages/VerificationPage.jsx'
+import DuplicateIntelligence from '../pages/DuplicateIntelligence.jsx'
 
 /**
  * Central registry for all authenticated application pages.
@@ -25,31 +29,45 @@ import VerificationPage from '../pages/VerificationPage.jsx'
  * of individual view conditions.
  */
 export const pageRegistry = {
+  // Overview
   dashboard: Dashboard,
+
+  // Intelligence
+  alerts: Alerts,
   projects: Projects,
   detail: ProjectDetail,
   progress: ProgressPage,
   verification: VerificationPage,
+  data: DataIntelligence,
+  connected: ConnectedIntelligence,
 
-  'field-dashboard': FieldDashboard,
-  inspections: Inspections,
-  'inspection-detail': InspectionDetail,
-
-  vendors: Vendors,
-  'vendor-detail': VendorDetail,
-
+  // Analytics
+  analytics: AnalyticsCenter,
+  duplicates: DuplicateIntelligence,
   payments: Payments,
   'payment-detail': PaymentDetail,
 
-  compliance: Compliance,
-  alerts: Alerts,
-  analytics: AnalyticsCenter,
+  // Spatial
   map: GisPage,
 
+  // Verification
+  inspections: Inspections,
+  'inspection-detail': InspectionDetail,
+  'field-dashboard': FieldDashboard,
+
+  // Vendors
+  vendors: Vendors,
+  'vendor-detail': VendorDetail,
+
+  // Governance
+  compliance: Compliance,
+
+  // Secondary
   funds: SecondaryPage,
   reports: SecondaryPage,
   users: SecondaryPage,
   settings: SecondaryPage,
+  compare: ComparisonPage,
 }
 
 export { LoginPage }

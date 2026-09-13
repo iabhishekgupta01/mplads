@@ -198,9 +198,8 @@ export function Compliance() {
           {eventTypes.map((type) => (
             <button
               key={type}
-              className={`compliance-filter-btn ${
-                typeFilter === type ? 'active' : ''
-              }`}
+              className={`compliance-filter-btn ${typeFilter === type ? 'active' : ''
+                }`}
               onClick={() => setTypeFilter(type)}
             >
               {type}
@@ -237,9 +236,8 @@ export function Compliance() {
                   key={`${event.time}-${event.actor}-${event.action}-${index}`}
                 >
                   <div
-                    className={`compliance-event-marker ${
-                      isAi ? 'ai' : 'officer'
-                    }`}
+                    className={`compliance-event-marker ${isAi ? 'ai' : 'officer'
+                      }`}
                   >
                     {isAi ? (
                       <Sparkles size={15} />
@@ -254,9 +252,8 @@ export function Compliance() {
                         <span>{event.time}</span>
 
                         <span
-                          className={`compliance-event-type ${
-                            isAi ? 'ai' : 'officer'
-                          }`}
+                          className={`compliance-event-type ${isAi ? 'ai' : 'officer'
+                            }`}
                         >
                           {isAi ? 'AI SYSTEM' : 'OFFICER'}
                         </span>

@@ -204,12 +204,12 @@ export function compareProjects(project, candidate) {
 
   const cost = amountSimilarity(
     project.amount ||
-      project.sanction?.sanctionedAmount ||
-      project.sanctionedAmount,
+    project.sanction?.sanctionedAmount ||
+    project.sanctionedAmount,
 
     candidate.amount ||
-      candidate.sanction?.sanctionedAmount ||
-      candidate.sanctionedAmount
+    candidate.sanction?.sanctionedAmount ||
+    candidate.sanctionedAmount
   );
 
   const vendor = vendorSimilarity(
@@ -241,12 +241,12 @@ export function compareProjects(project, candidate) {
 
   const score = Math.round(
     location * 0.25 +
-      category * 0.2 +
-      description * 0.15 +
-      cost * 0.1 +
-      vendor * 0.15 +
-      agency * 0.05 +
-      timeline * 0.1
+    category * 0.2 +
+    description * 0.15 +
+    cost * 0.1 +
+    vendor * 0.15 +
+    agency * 0.05 +
+    timeline * 0.1
   );
 
   const classification = classify(score);

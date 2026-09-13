@@ -72,14 +72,16 @@ export function AppProvider({ children }) {
   )
 
   const [query, setQuery] = useState('')
-const [riskFilter, setRiskFilter] = useState('All')
-
-const [gisStateFilter, setGisStateFilter] = useState('All')
-const [gisDistrictFilter, setGisDistrictFilter] = useState('All')
-
-const [modal, setModal] = useState(null)
-const [toast, setToast] = useState('')
-const [mobileNav, setMobileNav] = useState(false)
+  const [riskFilter, setRiskFilter] = useState('All')
+  const [gisStateFilter, setGisStateFilter] = useState('All')
+  const [gisDistrictFilter, setGisDistrictFilter] = useState('All')
+  const [modal, setModal] = useState(null)
+  const [toast, setToast] = useState('')
+  const [mobileNav, setMobileNav] = useState(false)
+  // Compare state: holds second project ID for side-by-side comparison
+  const [compareProjectId, setCompareProjectId] = useState(null)
+  // GIS center: when set, GIS map will fly to these coordinates
+  const [gisCenter, setGisCenter] = useState(null)
 
   const selected = useMemo(() => {
   return projects.find((project) => project.id === selectedId) || projects[0]
@@ -172,6 +174,32 @@ const selectedRisk = useMemo(() => {
     setLoggedIn(true)
     window.history.pushState({}, '', pathFromView(next))
     setMobileNav(false)
+  }
+
+  // Navigate to GIS map and center on specific coordinates
+  const openGisAt = (lat, lng, projectId) => {
+    if (projectId) setSelectedId(projectId)
+    setGisCenter({ lat, lng, projectId })
+    navigate('map')
+  }
+
+  // Open comparison between selected and another project
+  const openComparison = (projectId) => {
+    setCompareProjectId(projectId)
+    navigate('compare')
+  }
+
+  const escalateProject = (projectId, officerName) => {
+    setProjects(curr => curr.map(p => p.id === projectId ? { ...p, status: 'Escalated' } : p))
+    setAudit(curr => [{
+      time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+      actor: officerName || userRole,
+      action: 'Escalated to senior authority',
+      detail: `${projects.find(p => p.id === projectId)?.name} — case escalated. Evidence submitted for review.`,
+      tone: 'human',
+      projectId,
+    }, ...curr])
+    showToast('Escalation confirmed and recorded in audit trail.')
   }
 
   const submitAction = (event) => {
@@ -310,9 +338,9 @@ const selectedRisk = useMemo(() => {
     riskFilter,
     setRiskFilter,
     gisStateFilter,
-setGisStateFilter,
-gisDistrictFilter,
-setGisDistrictFilter,
+    setGisStateFilter,
+    gisDistrictFilter,
+    setGisDistrictFilter,
     modal,
     setModal,
     toast,
@@ -328,6 +356,13 @@ setGisDistrictFilter,
     navigate,
     submitAction,
     downloadProjectsCSV,
+    compareProjectId,
+    setCompareProjectId,
+    openComparison,
+    gisCenter,
+    setGisCenter,
+    openGisAt,
+    escalateProject,
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

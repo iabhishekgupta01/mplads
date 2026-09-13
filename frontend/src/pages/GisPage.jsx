@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 
 import {
   ArrowRight,
@@ -115,6 +115,20 @@ function MapControls() {
   )
 }
 
+function MapEffect() {
+  const map = useMap()
+  const { gisCenter, setGisCenter } = useApp()
+
+  useEffect(() => {
+    if (gisCenter) {
+      map.flyTo([gisCenter.lat, gisCenter.lng], 12, { animate: true, duration: 1.5 })
+      setGisCenter(null)
+    }
+  }, [gisCenter, map, setGisCenter])
+  
+  return null
+}
+
 
 /* =========================================================
    PROJECT COORDINATES
@@ -123,15 +137,15 @@ function MapControls() {
 function getCoordinates(project, index = 0) {
   const latitude = Number(
     project?.latitude ??
-      project?.lat ??
-      project?.location?.latitude
+    project?.lat ??
+    project?.location?.latitude
   )
 
   const longitude = Number(
     project?.longitude ??
-      project?.lng ??
-      project?.lon ??
-      project?.location?.longitude
+    project?.lng ??
+    project?.lon ??
+    project?.location?.longitude
   )
 
   /*
@@ -192,8 +206,8 @@ function calculateDistanceKm(pointA, pointB) {
   const a =
     Math.sin(dLat / 2) ** 2 +
     Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) ** 2
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) ** 2
 
   const c =
     2 * Math.atan2(
@@ -285,6 +299,7 @@ export function GisPage() {
     openProject,
     setGisStateFilter,
     setGisDistrictFilter,
+    openComparison,
   } = useApp()
 
 
@@ -352,9 +367,9 @@ export function GisPage() {
       selectedState === 'All'
         ? projects
         : projects.filter(
-            (project) =>
-              project?.state === selectedState
-          )
+          (project) =>
+            project?.state === selectedState
+        )
 
     return Array.from(
       new Set(
@@ -392,7 +407,7 @@ export function GisPage() {
       const riskMatch =
         riskFilter === 'All' ||
         projectRisk ===
-          riskFilter.toUpperCase()
+        riskFilter.toUpperCase()
 
 
       const categoryMatch =
@@ -489,13 +504,13 @@ export function GisPage() {
   const averageRisk =
     selectedAreaProjects.length
       ? Math.round(
-          selectedAreaProjects.reduce(
-            (sum, project) =>
-              sum + Number(project.score || 0),
-            0
-          ) /
-            selectedAreaProjects.length
-        )
+        selectedAreaProjects.reduce(
+          (sum, project) =>
+            sum + Number(project.score || 0),
+          0
+        ) /
+        selectedAreaProjects.length
+      )
       : 0
 
 
@@ -506,16 +521,16 @@ export function GisPage() {
   const averageExpenditure =
     selectedAreaProjects.length
       ? Math.round(
-          selectedAreaProjects.reduce(
-            (sum, project) =>
-              sum +
-              Number(
-                project.expenditure || 0
-              ),
-            0
-          ) /
-            selectedAreaProjects.length
-        )
+        selectedAreaProjects.reduce(
+          (sum, project) =>
+            sum +
+            Number(
+              project.expenditure || 0
+            ),
+          0
+        ) /
+        selectedAreaProjects.length
+      )
       : 0
 
 
@@ -955,8 +970,8 @@ export function GisPage() {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
 
-
             <MapControls />
+            <MapEffect />
 
 
             {/* =============================================
@@ -1007,7 +1022,7 @@ export function GisPage() {
 
                   isNearby =
                     project.id !==
-                      selectedMarker.id &&
+                    selectedMarker.id &&
                     distance <= 10
 
                   try {
@@ -1041,7 +1056,7 @@ export function GisPage() {
                     center={coordinates}
                     radius={
                       project.id ===
-                      selectedMarker?.id
+                        selectedMarker?.id
                         ? 12
                         : isNearby
                           ? 10
@@ -1050,7 +1065,7 @@ export function GisPage() {
                     pathOptions={{
                       color:
                         project.id ===
-                        selectedMarker?.id
+                          selectedMarker?.id
                           ? '#111827'
                           : isNearby
                             ? '#111827'
@@ -1058,7 +1073,7 @@ export function GisPage() {
 
                       weight:
                         project.id ===
-                        selectedMarker?.id
+                          selectedMarker?.id
                           ? 3
                           : isNearby
                             ? 3
@@ -1068,7 +1083,7 @@ export function GisPage() {
 
                       fillOpacity:
                         project.id ===
-                        selectedMarker?.id
+                          selectedMarker?.id
                           ? 1
                           : 0.95,
                     }}
@@ -1152,7 +1167,7 @@ export function GisPage() {
 
                         {selectedMarker &&
                           project.id !==
-                            selectedMarker.id &&
+                          selectedMarker.id &&
                           overlapScore !== null && (
                             <div
                               style={{
@@ -1511,9 +1526,8 @@ export function GisPage() {
 
                               <span
                                 className={
-                                  `gis-overlap-score ${
-                                    comparison.colorClass ||
-                                    'duplicate-clear'
+                                  `gis-overlap-score ${comparison.colorClass ||
+                                  'duplicate-clear'
                                   }`
                                 }
                               >
@@ -1531,7 +1545,7 @@ export function GisPage() {
 
                           {comparison &&
                             comparison.reasons?.length >
-                              0 && (
+                            0 && (
 
                               <div className="gis-overlap-reasons">
 
@@ -1577,13 +1591,23 @@ export function GisPage() {
 
                             {comparison &&
                               comparison.score >=
-                                35 && (
+                              35 && (
 
-                                <span className="gis-overlap-indicator">
+                                <button
+                                  type="button"
+                                  className="gis-nearby-investigate"
+                                  style={{ background: '#3b2f5b', borderColor: '#4a3b70' }}
+                                  onClick={() =>
+                                    openComparison(
+                                      project.id
+                                    )
+                                  }
+                                >
 
-                                  Potential overlap
+                                  <GitCompare size={12} />
+                                  Compare
 
-                                </span>
+                                </button>
 
                               )}
 
