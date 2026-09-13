@@ -1,2 +1,39 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
-:root{font-family:Manrope,'Segoe UI',sans-serif;color:#172b35;background:#f3f6f5;font-synthesis:none;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-width:320px;min-height:100vh}button,input,select,textarea{font:inherit}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #10834b66;outline-offset:2px}
+
+:root {
+  font-family: Manrope, 'Segoe UI', sans-serif;
+  color: #172b35;
+  background: #f3f6f5;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased
+}
+
+* {
+  box-sizing: border-box
+}
+
+html {
+  scroll-behavior: smooth
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #10834b66;
+  outline-offset: 2px
+}

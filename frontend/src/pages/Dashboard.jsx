@@ -77,10 +77,10 @@ export default function Dashboard() {
           <span>DEMO CASE READY</span>
           <strong>{sehore?.name || 'Road Construction — Sehore'}</strong>
           <small style={{ color: '#c6d6d6', fontSize: 11, marginBottom: 4 }}>
-            {sehore?.score}/100 HIGH · Financial-progress mismatch + payment anomaly
+          {sehore?.score}/100 CRITICAL · Road work: financial-progress mismatch + payment anomaly
           </small>
           <button onClick={() => openProject(sehore?.id)}>
-            Investigate high-risk case <ArrowRight size={16} />
+            Investigate critical case <ArrowRight size={16} />
           </button>
         </div>
       </section>
@@ -430,10 +430,10 @@ export default function Dashboard() {
         </div>
         <div style={{ display: 'flex', gap: 12, marginTop: 12, flexWrap: 'wrap' }}>
           {[
-            { text: 'AI risk score updated: Road Construction Sehore 68 → 82', time: '2 min ago', tone: 'ai' },
-            { text: '3 identical ₹5L payments flagged on MP-2024-1001', time: '15 min ago', tone: 'ai' },
-            { text: 'Field inspection INSP-1001 assigned to Anita Sharma', time: '1 hr ago', tone: 'system' },
-            { text: 'Community Hall Indore: risk escalated to 92/100', time: '3 hrs ago', tone: 'ai' },
+          { text: 'AI score updated: Rural Link Road Improvement – Sehore 68 → 82', time: '2 min ago', tone: 'ai' },
+            { text: '3 identical ₹5L payments flagged on MP-2024-1001 (Sehore Road)', time: '15 min ago', tone: 'ai' },
+            { text: 'Field inspection INSP-1001 assigned to Anita Sharma (Sehore)', time: '1 hr ago', tone: 'system' },
+            { text: 'Community Hall Indore: risk score escalated to 92/100', time: '3 hrs ago', tone: 'ai' },
           ].map((item, idx) => (
             <div
               key={idx}

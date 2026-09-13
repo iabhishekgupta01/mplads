@@ -16,8 +16,8 @@ const AppContext = createContext(null)
 const initialNotifications = [
   {
     id: 1,
-    title: 'High risk project detected',
-    detail: 'Road Construction – Sehore (Risk Score 82)',
+    title: 'Critical risk detected',
+    detail: 'Rural Link Road Improvement – Sehore (Score 82)',
     time: '2 min ago',
     view: 'detail',
     projectId: 'MP-2024-1001',
@@ -25,8 +25,8 @@ const initialNotifications = [
   },
   {
     id: 2,
-    title: 'Delay predicted (78% probability)',
-    detail: 'Community Hall – Morena',
+    title: 'Community Hall flagged — 61pp gap',
+    detail: 'Community Hall Construction – Indore (Score 92)',
     time: '15 min ago',
     view: 'detail',
     projectId: 'MP-2024-1187',
@@ -34,12 +34,21 @@ const initialNotifications = [
   },
   {
     id: 3,
-    title: 'Payment anomaly flagged',
-    detail: '3 identical payments released within 48 hours',
+    title: 'Payment anomaly confirmed',
+    detail: '3 identical ₹5L payments within 48 hours — Sehore Road',
     time: '1 hr ago',
     view: 'payment-detail',
     paymentId: 'TXN-001',
     unread: true,
+  },
+  {
+    id: 4,
+    title: 'Evidence review required',
+    detail: 'Sehore Road: Field evidence shows 31% vs reported 40%',
+    time: '3 hrs ago',
+    view: 'verification',
+    projectId: 'MP-2024-1001',
+    unread: false,
   },
 ]
 
@@ -356,6 +365,7 @@ const selectedRisk = useMemo(() => {
     navigate,
     submitAction,
     downloadProjectsCSV,
+    downloadCSV: downloadProjectsCSV,
     compareProjectId,
     setCompareProjectId,
     openComparison,
