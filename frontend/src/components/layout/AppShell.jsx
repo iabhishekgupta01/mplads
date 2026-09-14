@@ -29,7 +29,7 @@ export default function AppShell(props) {
   const unreadCount = notifications.filter((n) => n.unread).length
 
   const pageTitleMap = {
-    dashboard: 'Risk Command Center',
+    dashboard: 'Dashboard',
     projects: 'Project Intelligence',
     detail: 'Project Investigation',
     progress: 'Project Progress Update',

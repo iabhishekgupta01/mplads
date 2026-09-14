@@ -93,18 +93,18 @@ export function AppProvider({ children }) {
   const [gisCenter, setGisCenter] = useState(null)
 
   const selected = useMemo(() => {
-  return projects.find((project) => project.id === selectedId) || projects[0]
-}, [projects, selectedId])
+    return projects.find((project) => project.id === selectedId) || projects[0]
+  }, [projects, selectedId])
 
-const selectedRisk = useMemo(() => {
-  if (!selected) return null
+  const selectedRisk = useMemo(() => {
+    if (!selected) return null
 
-  return calculateProjectRisk(selected, {
-    projects,
-    payments,
-    vendors,
-  })
-}, [selected, projects, payments, vendors])
+    return calculateProjectRisk(selected, {
+      projects,
+      payments,
+      vendors,
+    })
+  }, [selected, projects, payments, vendors])
 
   const filteredProjects = useMemo(() => {
     return projects.filter(

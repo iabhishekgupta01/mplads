@@ -10,10 +10,10 @@ import {
 } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { compareProjects } from '../services/duplicateWorkEngine.jsx'
-import { formatCurrency } from '../utils/formatters.js'
+import { formatCurrency, riskColor } from '../utils/formatters.js'
 
 export default function DuplicateIntelligence() {
-  const { projects, openProject, navigate } = useApp()
+  const { projects, openProject, openComparison, setSelectedId, navigate } = useApp()
   const [search, setSearch] = useState('')
   const [minScore, setMinScore] = useState(30)
   const [sortBy, setSortBy] = useState('score')
@@ -52,6 +52,7 @@ export default function DuplicateIntelligence() {
 
   const critical = pairs.filter((p) => p.score >= 70).length
   const potential = pairs.filter((p) => p.score >= 50 && p.score < 70).length
+  const related = pairs.filter((p) => p.score >= 30 && p.score < 50).length
 
   const severityConfig = {
     high: { bg: '#faece8', color: '#ae4438', border: '#eeb3aa', label: 'Possible Duplicate' },
@@ -60,78 +61,106 @@ export default function DuplicateIntelligence() {
     clear: { bg: '#f5f9f7', color: '#67807a', border: '#dce7e3', label: 'Low Similarity' },
   }
 
+  const handleCompare = (pair) => {
+    setSelectedId(pair.a.id)
+    openComparison(pair.b.id)
+  }
+
   return (
     <div className="nir-page">
 
       {/* HEADER */}
-      <section className="nir-command-hero" style={{ background: '#1a1235' }}>
+      <section className="nir-command-hero" style={{ background: '#1a1235', marginBottom: 20 }}>
         <div>
           <span className="nir-eyebrow" style={{ color: '#c4b5fd' }}>
             <GitCompare size={13} /> SIMILAR WORK DETECTION · DUPLICATE INTELLIGENCE
           </span>
           <h1>
-            Are two works the <em>same project?</em>
+            Are two works the <em style={{ color: '#a9db6e' }}>same project?</em>
           </h1>
           <p>
             NIRIKSHAN compares work names, categories, locations, vendors, and financial
-            parameters across the entire MPLADS portfolio to detect possible duplicate
-            works, overlapping scope, or related projects that may indicate fund diversion.
+            parameters across the MPLADS portfolio to detect possible duplicate works,
+            overlapping scope, or related projects that may indicate accountability risks.
           </p>
         </div>
         <div className="nir-hero-action" style={{ borderLeftColor: '#2e2055' }}>
           <span style={{ color: '#c4b5fd' }}>PORTFOLIO SCAN</span>
-          <strong>{filteredPairs.length} pairs</strong>
-          <small style={{ color: '#a5c3d6' }}>{critical} possible duplicates · {potential} potential overlaps</small>
+          <strong style={{ fontSize: 38, display: 'block' }}>{filteredPairs.length}</strong>
+          <small style={{ color: '#a5c3d6', fontSize: 12 }}>{critical} possible duplicates · {potential} potential overlaps</small>
         </div>
       </section>
 
-      {/* KPI ROW */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 13, margin: '17px 0' }}>
+      {/* COMPACT KPI STRIP */}
+      <div style={{
+        display: 'flex',
+        gap: 0,
+        background: '#fff',
+        border: '1px solid #dce7e3',
+        borderRadius: 12,
+        marginBottom: 18,
+        overflow: 'hidden',
+      }}>
         {[
-          { label: 'Total pairs analyzed', value: pairs.length, note: 'All project combinations' },
-          { label: 'Possible duplicates', value: critical, note: 'Similarity ≥ 70%', red: true },
-          { label: 'Potential overlaps', value: potential, note: 'Similarity 50–69%', amber: true },
-          { label: 'Related works', value: pairs.filter(p => p.score >= 30 && p.score < 50).length, note: 'Similarity 30–49%' },
-        ].map((k) => (
-          <div key={k.label} className={`nir-metric ${k.red ? 'red' : k.amber ? 'amber' : ''}`}>
-            <span>{k.label}</span>
-            <strong>{k.value}</strong>
-            <small>{k.note}</small>
+          { label: 'SIMILAR WORK CASES', value: pairs.length, note: 'All combinations', color: '#1b3c43' },
+          { label: 'POSSIBLE DUPLICATES', value: critical, note: 'Similarity ≥ 70%', color: '#ae4438' },
+          { label: 'POTENTIAL OVERLAPS', value: potential, note: 'Similarity 50–69%', color: '#b77b1e' },
+          { label: 'RELATED WORKS', value: related, note: 'Similarity 30–49%', color: '#216454' },
+        ].map((k, i) => (
+          <div key={k.label} style={{
+            flex: 1,
+            padding: '14px 20px',
+            borderRight: i < 3 ? '1px solid #e7efec' : 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 16,
+          }}>
+            <div style={{
+              fontSize: 34,
+              fontWeight: 800,
+              color: k.color,
+              lineHeight: 1,
+              minWidth: 44,
+            }}>{k.value}</div>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 800, color: '#8ca59f', letterSpacing: '0.07em', textTransform: 'uppercase' }}>{k.label}</div>
+              <div style={{ fontSize: 12, color: '#67807a', marginTop: 2 }}>{k.note}</div>
+            </div>
           </div>
         ))}
       </div>
 
       {/* FILTERS */}
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '12px 16px', background: '#fff', border: '1px solid #dce7e3', borderRadius: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '12px 16px', background: '#fff', border: '1px solid #dce7e3', borderRadius: 10, marginBottom: 14, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 180 }}>
           <Search size={15} style={{ color: '#8ca59f' }} />
           <input
             type="text"
             placeholder="Search projects, IDs, districts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ border: 'none', outline: 'none', width: '100%', fontSize: 13 }}
+            style={{ border: 'none', outline: 'none', width: '100%', fontSize: 13, color: '#1b3c43' }}
           />
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#67807a' }}>MIN SCORE:</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#67807a' }}>MIN SCORE:</span>
           {[20, 30, 50, 70].map((v) => (
             <button
               key={v}
               onClick={() => setMinScore(v)}
-              style={{ padding: '4px 10px', borderRadius: 4, border: '1px solid #dce7e3', background: minScore === v ? '#185a49' : '#fff', color: minScore === v ? '#fff' : '#47635e', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}
+              style={{ padding: '5px 12px', borderRadius: 4, border: '1px solid #dce7e3', background: minScore === v ? '#185a49' : '#fff', color: minScore === v ? '#fff' : '#47635e', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
             >
               {v}%+
             </button>
           ))}
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#67807a' }}>SORT:</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#67807a' }}>SORT:</span>
           {[['score', 'By Score'], ['name', 'By Name']].map(([v, label]) => (
             <button
               key={v}
               onClick={() => setSortBy(v)}
-              style={{ padding: '4px 10px', borderRadius: 4, border: '1px solid #dce7e3', background: sortBy === v ? '#185a49' : '#fff', color: sortBy === v ? '#fff' : '#47635e', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}
+              style={{ padding: '5px 12px', borderRadius: 4, border: '1px solid #dce7e3', background: sortBy === v ? '#185a49' : '#fff', color: sortBy === v ? '#fff' : '#47635e', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
             >
               {label}
             </button>
@@ -140,12 +169,12 @@ export default function DuplicateIntelligence() {
       </div>
 
       {/* METHODOLOGY NOTE */}
-      <div style={{ padding: '10px 16px', background: '#f8faf9', border: '1px solid #dce7e3', borderRadius: 8, marginBottom: 16, fontSize: 12, color: '#47635e', display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div style={{ padding: '10px 16px', background: '#f8faf9', border: '1px solid #dce7e3', borderRadius: 8, marginBottom: 16, fontSize: 13, color: '#47635e', display: 'flex', alignItems: 'center', gap: 10 }}>
         <CheckCircle2 size={16} style={{ color: '#2a8a6e', flexShrink: 0 }} />
         <span>
           <strong style={{ color: '#1b3c43' }}>Methodology:</strong> Similarity scoring uses weighted combination of
           name/description text similarity, category match, location overlap, shared vendor, and financial parameter comparison.
-          A high score is a risk signal for review — not a confirmed finding of fraud.
+          A high score is a risk signal — not a confirmed finding of fraud or duplication.
         </span>
       </div>
 
@@ -155,87 +184,140 @@ export default function DuplicateIntelligence() {
           No matching pairs found for current filters.
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {filteredPairs.map((pair, idx) => {
             const sev = severityConfig[pair.classification?.severity || pair.severity || 'low'] || severityConfig.low
             const reasons = pair.reasons || []
             const breakdown = pair.signals || {}
-            const severity = pair.severity || 'low'
 
             return (
               <div
                 key={`${pair.a.id}-${pair.b.id}`}
-                className="nir-panel"
-                style={{ borderLeft: `4px solid ${sev.color}` }}
+                style={{
+                  background: '#fff',
+                  border: '1px solid #dce7e3',
+                  borderLeft: `4px solid ${sev.color}`,
+                  borderRadius: 12,
+                  overflow: 'hidden',
+                }}
               >
-                <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-
-                  {/* PAIR NUMBER + SCORE */}
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                {/* PAIR HEADER */}
+                <div style={{
+                  display: 'flex',
+                  gap: 16,
+                  alignItems: 'center',
+                  padding: '14px 20px',
+                  background: sev.bg + '60',
+                  borderBottom: '1px solid #e7efec',
+                  flexWrap: 'wrap',
+                }}>
+                  {/* SCORE BADGE */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
                     <div style={{ fontSize: 11, fontWeight: 800, color: '#8ca59f', fontFamily: 'monospace' }}>#{String(idx + 1).padStart(2, '0')}</div>
-                    <div style={{ width: 64, height: 64, borderRadius: '50%', background: sev.bg, border: `2px solid ${sev.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                      <strong style={{ fontSize: 22, fontWeight: 800, color: sev.color, lineHeight: 1 }}>{pair.score}</strong>
+                    <div style={{
+                      width: 58,
+                      height: 58,
+                      borderRadius: '50%',
+                      background: sev.bg,
+                      border: `2px solid ${sev.border}`,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                      <strong style={{ fontSize: 20, fontWeight: 800, color: sev.color, lineHeight: 1 }}>{pair.score}</strong>
                       <span style={{ fontSize: 9, color: sev.color, fontWeight: 700 }}>SCORE</span>
                     </div>
-                    <span style={{ fontSize: 10, padding: '3px 8px', borderRadius: 4, background: sev.bg, color: sev.color, border: `1px solid ${sev.border}`, fontWeight: 800, whiteSpace: 'nowrap', textAlign: 'center' }}>
-                      {sev.label}
-                    </span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: sev.color }}>{sev.label}</div>
+                      <div style={{ fontSize: 12, color: '#67807a', marginTop: 2 }}>Similarity {pair.score}%</div>
+                    </div>
                   </div>
+
+                  <div style={{ flex: 1 }} />
+
+                  {/* ACTIONS */}
+                  <div style={{ display: 'flex', gap: 10, flexShrink: 0, flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => handleCompare(pair)}
+                      style={{
+                        background: sev.color,
+                        color: '#fff',
+                        border: 0,
+                        borderRadius: 8,
+                        padding: '9px 16px',
+                        fontSize: 13,
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 7,
+                      }}
+                    >
+                      <GitCompare size={14} /> Compare &amp; Investigate <ArrowRight size={13} />
+                    </button>
+                    <button
+                      onClick={() => navigate('map')}
+                      style={{
+                        background: '#fff',
+                        color: '#47635e',
+                        border: '1px solid #dce7e3',
+                        borderRadius: 8,
+                        padding: '9px 14px',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                      }}
+                    >
+                      <MapPin size={13} /> View on Map
+                    </button>
+                  </div>
+                </div>
+
+                {/* PAIR BODY */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr auto', gap: 0, padding: '16px 20px', alignItems: 'stretch' }}>
 
                   {/* PROJECT A */}
                   <ProjectCard project={pair.a} onClick={() => openProject(pair.a.id)} label="PROJECT A" />
 
-                  {/* VS DIVIDER */}
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '8px 0', flexShrink: 0 }}>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: '#8ca59f' }}>VS</span>
+                  {/* VS */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px', flexShrink: 0 }}>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: '#8ca59f' }}>VS</span>
                   </div>
 
                   {/* PROJECT B */}
                   <ProjectCard project={pair.b} onClick={() => openProject(pair.b.id)} label="PROJECT B" />
 
                   {/* SIMILARITY BREAKDOWN */}
-                  <div style={{ flex: 1, minWidth: 180 }}>
-                    <div style={{ fontSize: 10, fontWeight: 800, color: '#67807a', marginBottom: 8, letterSpacing: '0.06em' }}>SIMILARITY BREAKDOWN</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  <div style={{ paddingLeft: 20, borderLeft: '1px solid #e7efec', minWidth: 200 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: '#67807a', marginBottom: 10, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Similarity Breakdown</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                       {Object.entries(breakdown).filter(([, v]) => v != null).map(([key, value]) => (
                         <div key={key}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#47635e', marginBottom: 2 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#47635e', marginBottom: 3 }}>
                             <span style={{ textTransform: 'capitalize' }}>{key}</span>
                             <b style={{ color: value >= 70 ? '#ae4438' : '#1b3c43' }}>{Math.round(value)}%</b>
                           </div>
-                          <div style={{ height: 4, background: '#edf1ef', borderRadius: 2 }}>
+                          <div style={{ height: 5, background: '#edf1ef', borderRadius: 2 }}>
                             <div style={{ height: '100%', width: `${Math.round(value)}%`, background: value >= 70 ? '#dc4a38' : value >= 40 ? '#d9890f' : '#65a98f', borderRadius: 2 }} />
                           </div>
                         </div>
                       ))}
                     </div>
                     {reasons.length > 0 && (
-                      <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: '#67807a', letterSpacing: '.04em' }}>REASONS FLAGGED</span>
+                      <div style={{ marginTop: 12 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#67807a', display: 'block', marginBottom: 5 }}>REASONS FLAGGED</span>
                         {reasons.map((r) => (
-                          <div key={r} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#47635e' }}>
-                            <AlertTriangle size={11} style={{ color: sev.color, flexShrink: 0 }} />
+                          <div key={r} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, fontSize: 12, color: '#47635e', marginBottom: 4 }}>
+                            <AlertTriangle size={11} style={{ color: sev.color, flexShrink: 0, marginTop: 2 }} />
                             {r}
                           </div>
                         ))}
                       </div>
                     )}
-                    <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-                      <button
-                        className="nir-link"
-                        onClick={() => { openProject(pair.a.id); }}
-                        style={{ fontSize: 11 }}
-                      >
-                        Investigate A <ArrowRight size={12} />
-                      </button>
-                      <button
-                        className="nir-link"
-                        onClick={() => navigate('map')}
-                        style={{ fontSize: 11 }}
-                      >
-                        <MapPin size={11} /> View map
-                      </button>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -245,18 +327,17 @@ export default function DuplicateIntelligence() {
       )}
 
       {/* GUIDANCE NOTE */}
-      <div style={{ marginTop: 20, padding: '14px 20px', background: '#f5f9f7', borderRadius: 10, border: '1px solid #dce7e3', fontSize: 12, color: '#47635e' }}>
-        <strong style={{ color: '#1b3c43', display: 'block', marginBottom: 4 }}>
-          How to act on detected duplicates
+      <div style={{ marginTop: 20, padding: '14px 20px', background: '#f5f9f7', borderRadius: 10, border: '1px solid #dce7e3', fontSize: 13, color: '#47635e' }}>
+        <strong style={{ color: '#1b3c43', display: 'block', marginBottom: 6 }}>
+          How to act on detected similar works
         </strong>
-        <p style={{ margin: 0, lineHeight: 1.6 }}>
-          A high similarity score does not automatically mean fraud or a duplicate work. It is a risk
-          signal that warrants review. Compare project descriptions, site locations, physical scope
-          and payment records. If a genuine overlap is found, escalate to the appropriate authority.
-          All investigation actions must be recorded in the audit trail.
+        <p style={{ margin: 0, lineHeight: 1.65 }}>
+          A high similarity score is a risk signal that warrants review — not a confirmed finding of fraud or duplication.
+          Use <strong>Compare &amp; Investigate</strong> to examine each pair side by side. If a genuine overlap is confirmed,
+          escalate to the appropriate authority. All investigation actions must be recorded in the audit trail.
         </p>
-        <button className="nir-link" style={{ marginTop: 10 }} onClick={() => navigate('compliance')}>
-          View audit ledger <ArrowRight size={13} />
+        <button className="nir-link" style={{ marginTop: 10, fontSize: 13 }} onClick={() => navigate('compliance')}>
+          View audit trail <ArrowRight size={13} />
         </button>
       </div>
     </div>
@@ -264,29 +345,39 @@ export default function DuplicateIntelligence() {
 }
 
 function ProjectCard({ project: p, onClick, label }) {
-  const riskColor = p.score >= 70 ? '#ae4438' : p.score >= 40 ? '#b77b1e' : '#2a8a6e'
-  const riskBg = p.score >= 70 ? '#faece8' : p.score >= 40 ? '#fff5e4' : '#e9f5ef'
+  const rc = riskColor(p.score)
+  const gap = (p.expenditure || 0) - (p.physical || 0)
   return (
     <div
       onClick={onClick}
-      style={{ flex: 1, minWidth: 180, padding: '12px 14px', background: '#f8faf9', border: '1px solid #dce7e3', borderRadius: 8, cursor: 'pointer' }}
+      style={{
+        padding: '12px 16px',
+        background: '#f8faf9',
+        border: '1px solid #dce7e3',
+        borderRadius: 10,
+        cursor: 'pointer',
+        transition: 'background 0.15s',
+      }}
+      onMouseEnter={(e) => e.currentTarget.style.background = '#eef7f3'}
+      onMouseLeave={(e) => e.currentTarget.style.background = '#f8faf9'}
     >
-      <div style={{ fontSize: 10, fontWeight: 800, color: '#67807a', letterSpacing: '.05em', marginBottom: 6 }}>{label}</div>
-      <div style={{ fontSize: 13, fontWeight: 800, color: '#1b3c43', marginBottom: 4 }}>{p.name}</div>
-      <div style={{ fontSize: 11, color: '#67807a', marginBottom: 8 }}>{p.id} · {p.district}, {p.state}</div>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 11, padding: '3px 7px', background: '#f0f0f0', borderRadius: 4, color: '#47635e' }}>
-          {p.category}
-        </span>
-        <span style={{ fontSize: 11, padding: '3px 7px', borderRadius: 4, background: riskBg, color: riskColor, fontWeight: 700 }}>
-          Risk {p.score}
-        </span>
-        <span style={{ fontSize: 11, padding: '3px 7px', background: '#f0f0f0', borderRadius: 4, color: '#47635e' }}>
-          {formatCurrency(p.amount)}
-        </span>
+      <div style={{ fontSize: 10, fontWeight: 800, color: '#67807a', letterSpacing: '.05em', textTransform: 'uppercase', marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: 14, fontWeight: 800, color: '#1b3c43', marginBottom: 4, lineHeight: 1.3 }}>{p.name}</div>
+      <div style={{ fontSize: 12, color: '#67807a', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+        <MapPin size={11} /> {p.district}, {p.state}
+      </div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+        <span style={{ fontSize: 12, padding: '3px 8px', background: '#f0f0f0', borderRadius: 4, color: '#47635e' }}>{p.category}</span>
+        <span style={{ fontSize: 12, padding: '3px 8px', borderRadius: 4, background: rc + '18', color: rc, fontWeight: 700 }}>Risk {p.score}</span>
+        <span style={{ fontSize: 12, padding: '3px 8px', background: '#f0f0f0', borderRadius: 4, color: '#47635e' }}>{formatCurrency(p.amount)}</span>
+      </div>
+      <div style={{ display: 'flex', gap: 12, fontSize: 12, color: '#67807a' }}>
+        <span>Exp: <strong style={{ color: '#1b3c43' }}>{p.expenditure}%</strong></span>
+        <span>Phy: <strong style={{ color: '#1b3c43' }}>{p.physical}%</strong></span>
+        <span>Gap: <strong style={{ color: gap >= 20 ? '#ae4438' : '#1b3c43' }}>{gap}pp</strong></span>
       </div>
       {p.vendor && (
-        <div style={{ fontSize: 11, color: '#67807a', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+        <div style={{ fontSize: 12, color: '#67807a', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
           <Building2 size={11} /> {p.vendor}
         </div>
       )}

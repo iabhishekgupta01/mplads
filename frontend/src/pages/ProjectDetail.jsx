@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { useApp } from '../context/AppContext.jsx'
 import { formatCurrency } from '../utils/formatters.js'
+import "../styles/ProjectDetails.css"
 import '../styles/nirikshan.css'
 
 const rupees = (n) => `₹${(n / 100000).toFixed(1)} lakh`
